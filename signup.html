@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Force Logo to be White */
+        /* White Logo Styles */
         .logo, .logo .logo-accent { color: #ffffff !important; }
         .logo-mark { background: #ffffff !important; color: #0f1f3d !important; }
         .nav-hint { color: rgba(255,255,255,0.7); }
@@ -33,9 +33,9 @@
     <div class="login-left" id="sidePanel">
         <div class="login-left-overlay"></div>
         <div class="login-left-content">
-            <div class="left-badge"><i class="fa-solid fa-rocket"></i> Join the Community</div>
-            <h2>Start your journey with <span>Shohoj Sheba</span></h2>
-            <p>The smartest way to find local services or grow your profession.</p>
+            <div class="left-badge"><i class="fa-solid fa-rocket"></i> Get Started</div>
+            <h2>Join <span>Shohoj Sheba</span></h2>
+            <p>Connect with local experts or grow your service business today.</p>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
                     <label>Password</label>
                     <div class="input-wrap">
                         <i class="fa-solid fa-lock input-icon"></i>
-                        <input type="password" id="password" placeholder="At least 6 characters" required>
+                        <input type="password" id="password" placeholder="Min 6 characters" required>
                         <button type="button" class="toggle-pw" onclick="togglePassword()">
                             <i class="fa-solid fa-eye" id="eyeIcon"></i>
                         </button>
@@ -90,15 +90,11 @@
 
 <script src="auth.js"></script>
 <script>
-    // Local UI Behavior: Theme Toggle
+    // Theme switching logic
     document.querySelectorAll('input[name="role"]').forEach(radio => {
         radio.addEventListener('change', function() {
-            const sidePanel = document.getElementById('sidePanel');
-            if (this.value === 'worker') {
-                sidePanel.classList.add('worker-mode');
-            } else {
-                sidePanel.classList.remove('worker-mode');
-            }
+            const panel = document.getElementById('sidePanel');
+            this.value === 'worker' ? panel.classList.add('worker-mode') : panel.classList.remove('worker-mode');
         });
     });
 </script>
