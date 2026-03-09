@@ -1,4 +1,10 @@
-// Toggle Password Visibility
+/* =============================================
+   SHOHOJ SHEBA — AUTH.JS
+   Logic for Signup and Login
+   ============================================= */
+
+// 1. Password Toggle (Eye Icon)
+// This allows users to see their password while typing
 function togglePassword() {
     const pw = document.getElementById('password');
     const icon = document.getElementById('eyeIcon');
@@ -11,22 +17,29 @@ function togglePassword() {
     }
 }
 
-// Signup Logic
+// 2. Handle Registration (Signup)
 function handleSignup(e) {
     e.preventDefault();
     
-    // Select the button and loader
-    const btn = document.getElementById('signupBtn');
-    const text = btn.querySelector('.btn-text');
-    const loader = btn.querySelector('.btn-loader');
-
     // Get input values
     const name = document.getElementById('fullname').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const role = document.querySelector('input[name="role"]:checked').value;
+    const roleElement = document.querySelector('input[name="role"]:checked');
+    
+    // Check if role is selected
+    if (!roleElement) {
+        alert("Please select a role (User or Worker)");
+        return;
+    }
+    const role = roleElement.value;
 
-    // Basic Validation
+    // Select the button and loader for visual feedback
+    const btn = document.getElementById('signupBtn');
+    const text = btn.querySelector('.btn-text');
+    const loader = btn.querySelector('.btn-loader');
+
+    // Validation
     if (password.length < 6) {
         alert("Password must be at least 6 characters");
         return;
@@ -34,19 +47,19 @@ function handleSignup(e) {
 
     // Visual feedback: Start loading
     btn.disabled = true;
-    text.style.display = 'none';
-    loader.style.display = 'inline-flex';
+    if (text) text.style.display = 'none';
+    if (loader) loader.style.display = 'inline-flex';
 
     setTimeout(() => {
-        // Retrieve existing users from localStorage
+        // Get existing users from localStorage or start empty array
         const users = JSON.parse(localStorage.getItem('shohoj_sheba_users') || '[]');
         
-        // Check for duplicates
+        // Check if email is already taken
         if (users.find(u => u.email === email)) {
             alert("This email is already registered!");
             btn.disabled = false;
-            text.style.display = 'inline-flex';
-            loader.style.display = 'none';
+            if (text) text.style.display = 'inline-flex';
+            if (loader) loader.style.display = 'none';
             return;
         }
 
@@ -57,4 +70,37 @@ function handleSignup(e) {
         alert("Registration Successful! Redirecting to login...");
         window.location.href = 'login.html';
     }, 1500);
+}
+
+// 3. Handle Login
+function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const roleElement = document.querySelector('input[name="role"]:checked');
+
+    if (!roleElement) {
+        alert("Please select your role");
+        return;
+    }
+    const role = roleElement.value;
+
+    // Find user in localStorage
+    const users = JSON.parse(localStorage.getItem('shohoj_sheba_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password && u.role === role);
+
+    if (user) {
+        // Save current session so the site knows you're logged in
+        localStorage.setItem('shohoj_sheba_user', JSON.stringify(user));
+        
+        // Redirect based on role
+        if (role === 'worker') {
+            window.location.href = 'worker-dashboard.html';
+        } else {
+            window.location.href = 'user-dashboard.html';
+        }
+    } else {
+        alert("Invalid email, password, or role. Please try again.");
+    }
 }
