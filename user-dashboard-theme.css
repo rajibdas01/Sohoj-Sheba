@@ -1,0 +1,129 @@
+/* =============================================
+   SHOHOJ SHEBA — USER-DASHBOARD-THEME.CSS
+   User (green) theme overrides
+   ============================================= */
+
+:root {
+    --accent:       #2e7d32;
+    --accent-light: #43a047;
+    --accent-pale:  #e8f5e9;
+    --accent-glow:  rgba(46,125,50,0.4);
+    --nav-active-bg:   rgba(105,240,174,0.12);
+    --nav-active-text: #69f0ae;
+    --blue:       #1565c0;
+    --blue-dark:  #0d47a1;
+    --blue-light: #e3f2fd;
+    --green:      #2e7d32;
+    --green-dark: #1b5e20;
+    --navy:       #0f1f3d;
+    --text:       #1a1a2e;
+    --muted:      #64748b;
+    --bg:         #f5f7fa;
+    --white:      #ffffff;
+    --radius:     14px;
+    --shadow:     0 8px 30px rgba(0,0,0,0.08);
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar brand icon */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--bg);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logo-mark {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--green), #43a047);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(46,125,50,0.35);
+}
+
+.logo-accent { color: var(--green); }
+
+
+/* Sidebar user avatar */
+.user-ava { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+
+/* Nav active state */
+.nav-item.active { background: var(--nav-active-bg); color: var(--nav-active-text); }
+.nav-item.active i { color: var(--nav-active-text); }
+
+/* Welcome banner accent glow */
+.welcome-banner::before {
+    background: radial-gradient(circle, rgba(46,125,50,0.25) 0%, transparent 70%);
+}
+.welcome-text h2 span { color: #69f0ae; }
+
+/* Primary button */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    box-shadow: 0 4px 14px var(--accent-glow);
+    color: white; border: none;
+    padding: 11px 22px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+    white-space: nowrap; position: relative; z-index: 1;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+
+/* Topbar icon hover */
+.topbar-icon-btn:hover { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+
+/* Topbar avatar */
+.topbar-avatar { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+
+/* Card head icon */
+.card-head h3 i { color: var(--accent); }
+
+/* Link button */
+.link-btn { color: var(--accent); }
+.link-btn:hover { color: var(--accent-light); }
+
+/* Filter tabs */
+.filter-tab.active, .filter-tab:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* Quick cards */
+.quick-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(46,125,50,0.1); }
+.quick-card p { color: var(--accent); }
+
+/* Service cards */
+.service-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(46,125,50,0.1); transform: translateY(-2px); }
+
+/* Book button */
+.btn-book {
+    background: var(--accent-pale); color: var(--accent);
+    border: none; border-radius: 8px;
+    padding: 8px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+}
+.btn-book:hover { background: var(--accent); color: white; }
+
+/* Profile avatar */
+.profile-ava { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+
+/* Profile badge */
+.profile-badge {
+    display: inline-block;
+    background: var(--accent-pale); color: var(--accent);
+    font-size: 11.5px; font-weight: 600;
+    padding: 4px 12px; border-radius: 100px;
+}
+
+/* Secondary button hover */
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }

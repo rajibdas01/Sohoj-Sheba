@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard — Shohoj Sheba</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="user-dashboard-theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="logo">
+            <div class="logo-mark">
+                <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <span>Sohoj<span class="logo-accent">Sheba</span></span>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="user-ava"><i class="fa-solid fa-user"></i></div>
+        <div class="user-meta">
+            <strong id="sidebarUserName">—</strong>
+            <span id="sidebarUserEmail">—</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-label">Main</div>
+        <button class="nav-item active" data-page="overview">
+            <i class="fa-solid fa-grid-2"></i><span>Overview</span>
+        </button>
+        <button class="nav-item" data-page="bookings">
+            <i class="fa-solid fa-calendar-check"></i><span>My Bookings</span>
+        </button>
+        <button class="nav-item" data-page="new-booking">
+            <i class="fa-solid fa-plus-circle"></i><span>New Booking</span>
+        </button>
+
+        <div class="nav-label">Account</div>
+        <button class="nav-item" data-page="history">
+            <i class="fa-solid fa-clock-rotate-left"></i><span>History</span>
+        </button>
+        <button class="nav-item" data-page="favorites">
+            <i class="fa-solid fa-star"></i><span>Favorites</span>
+        </button>
+        <button class="nav-item" data-page="profile">
+            <i class="fa-solid fa-user"></i><span>Profile</span>
+        </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button class="logout-btn" id="logoutBtn">
+            <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+    <header class="topbar">
+        <button class="topbar-menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
+        <div class="topbar-title" id="pageTitle">Overview</div>
+        <div class="topbar-right">
+            <div class="topbar-icon-btn">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge">0</span>
+            </div>
+            <div class="topbar-avatar"><i class="fa-solid fa-user"></i></div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- OVERVIEW -->
+        <section id="overview-page" class="page active">
+            <div class="welcome-banner">
+                <div class="welcome-text">
+                    <h2>Welcome back, <span id="profileName">—</span> 👋</h2>
+                    <p>Here's a summary of your service activity.</p>
+                </div>
+                <button class="btn-primary" onclick="SohojShebaDashboard.showPage('new-booking')">
+                    <i class="fa-solid fa-plus"></i> Book a Service
+                </button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-blue"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div><h3 id="statTotal">—</h3><p>Total Bookings</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-amber"><i class="fa-solid fa-clock"></i></div>
+                    <div><h3 id="statPending">—</h3><p>Pending</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-green"><i class="fa-solid fa-circle-check"></i></div>
+                    <div><h3 id="statCompleted">—</h3><p>Completed</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-teal"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
+                    <div><h3 id="statSpent">—</h3><p>Total Spent</p></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Bookings</h3>
+                    <a href="#" class="link-btn" onclick="SohojShebaDashboard.showPage('bookings');return false;">View All</a>
+                </div>
+                <div id="recentBookings">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        <h4>No bookings yet</h4>
+                        <p>Your recent bookings will show here once the database is connected.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-bolt"></i> Quick Book</h3>
+                </div>
+                <div class="card-body">
+                    <div class="quick-grid">
+                        <div class="quick-card" onclick="SohojShebaDashboard.showPage('new-booking')">
+                            <div class="qa-icon si-g"><i class="fa-solid fa-hammer"></i></div>
+                            <h4>Carpenter</h4><p>Book Now</p>
+                        </div>
+                        <div class="quick-card" onclick="SohojShebaDashboard.showPage('new-booking')">
+                            <div class="qa-icon si-b"><i class="fa-solid fa-faucet-drip"></i></div>
+                            <h4>Plumber</h4><p>Book Now</p>
+                        </div>
+                        <div class="quick-card" onclick="SohojShebaDashboard.showPage('new-booking')">
+                            <div class="qa-icon si-y"><i class="fa-solid fa-bolt"></i></div>
+                            <h4>Electrician</h4><p>Book Now</p>
+                        </div>
+                        <div class="quick-card" onclick="SohojShebaDashboard.showPage('new-booking')">
+                            <div class="qa-icon si-br"><i class="fa-solid fa-trowel-bricks"></i></div>
+                            <h4>Mason</h4><p>Book Now</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MY BOOKINGS -->
+        <section id="bookings-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-calendar-check"></i> My Bookings</h3>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active">All</button>
+                        <button class="filter-tab">Pending</button>
+                        <button class="filter-tab">Accepted</button>
+                        <button class="filter-tab">Completed</button>
+                    </div>
+                </div>
+                <div id="userBookings">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-calendar"></i></div>
+                        <h4>No bookings found</h4>
+                        <p>Bookings will load here once connected to the database.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW BOOKING -->
+        <section id="new-booking-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-plus-circle"></i> Book a New Service</h3>
+                </div>
+                <div class="card-body">
+                    <div class="services-grid">
+                        <div class="service-card">
+                            <div class="svc-icon si-g"><i class="fa-solid fa-hammer"></i></div>
+                            <h4>Carpenter</h4>
+                            <p class="svc-price">From ৳500</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="svc-icon si-b"><i class="fa-solid fa-faucet-drip"></i></div>
+                            <h4>Plumber</h4>
+                            <p class="svc-price">From ৳400</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="svc-icon si-y"><i class="fa-solid fa-bolt"></i></div>
+                            <h4>Electrician</h4>
+                            <p class="svc-price">From ৳450</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="svc-icon si-br"><i class="fa-solid fa-trowel-bricks"></i></div>
+                            <h4>Mason</h4>
+                            <p class="svc-price">From ৳600</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="svc-icon si-t"><i class="fa-solid fa-seedling"></i></div>
+                            <h4>Gardener</h4>
+                            <p class="svc-price">From ৳350</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="svc-icon si-r"><i class="fa-solid fa-house-circle-check"></i></div>
+                            <h4>Home Repair</h4>
+                            <p class="svc-price">From ৳450</p>
+                            <button class="btn-book">Book Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="history-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Booking History</h3>
+                </div>
+                <div id="bookingHistory">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <h4>No history yet</h4>
+                        <p>Your completed booking history will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAVORITES -->
+        <section id="favorites-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-star"></i> Favorite Workers</h3>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-solid fa-star"></i></div>
+                    <h4>No favorites yet</h4>
+                    <p>Workers you save as favorites will appear here.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section id="profile-page" class="page">
+            <div class="profile-wrap">
+                <div class="profile-side">
+                    <div class="profile-ava"><i class="fa-solid fa-user"></i></div>
+                    <h3 id="profileNameLarge">—</h3>
+                    <p id="profileEmailSide">—</p>
+                    <span class="profile-badge">User Account</span>
+                </div>
+                <div class="profile-main">
+                    <h3>Account Details</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Full Name</label>
+                            <p id="profileNameDetail">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email Address</label>
+                            <p id="profileEmail">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Account Type</label>
+                            <p>User</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Member Since</label>
+                            <p id="profileJoinDate">—</p>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="profile-actions">
+                        <button class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+                        <button class="btn-secondary"><i class="fa-solid fa-lock"></i> Change Password</button>
+                        <button class="btn-danger" id="profileLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="dashboard.js"></script>
+<script>
+    document.querySelectorAll('.filter-tabs').forEach(group => {
+        group.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                group.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    });
+    document.getElementById('menuBtn').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+</script>
+</body>
+</html>

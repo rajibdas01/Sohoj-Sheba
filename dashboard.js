@@ -1,117 +1,156 @@
 /* =============================================
    SHOHOJ SHEBA — DASHBOARD.JS
-   Universal Logic for User & Worker
+   Universal logic for User & Worker dashboards.
+   localStorage removed — session managed by PHP.
+   TODO: Replace fetch() stubs with real PHP endpoints.
    ============================================= */
 
 const SohojShebaDashboard = {
+
+    currentUser: null,
+
     init() {
         this.checkAuth();
-        this.loadUserData();
         this.setupNavigation();
-        this.setupSidebar();
         this.setupLogout();
-
-        // Specific loaders
-        if (document.body.classList.contains('worker-dashboard')) {
-            this.loadWorkerContent();
-        } else {
-            this.loadUserContent();
-        }
     },
 
+    // ─── Auth check ───────────────────────────────────
     checkAuth() {
-        const user = JSON.parse(localStorage.getItem('shohoj_sheba_user'));
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
-        // Simple security check: Ensure worker is on worker page and vice-versa
+        // TODO: Replace with → fetch('api/session.php')
+        /*
+        fetch('api/session.php')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.loggedIn) { window.location.href = 'login.html'; return; }
+                this.currentUser = data.user;
+                const isWorkerPage = document.body.classList.contains('worker-dashboard');
+                if (isWorkerPage && data.user.role !== 'worker') window.location.href = 'user-dashboard.html';
+                if (!isWorkerPage && data.user.role === 'worker') window.location.href = 'worker-dashboard.html';
+                this.populateUserUI(data.user);
+                if (isWorkerPage) this.loadWorkerContent();
+                else this.loadUserContent();
+            })
+            .catch(() => { window.location.href = 'login.html'; });
+        */
+
+        // ── DEV BYPASS — remove this block and uncomment fetch() above when PHP is ready ──
         const isWorkerPage = document.body.classList.contains('worker-dashboard');
-        if (isWorkerPage && user.role !== 'worker') window.location.href = 'user-dashboard.html';
-        if (!isWorkerPage && user.role === 'worker') window.location.href = 'worker-dashboard.html';
+        this.currentUser = {
+            name:  isWorkerPage ? 'Dev Worker'      : 'Dev User',
+            email: isWorkerPage ? 'worker@dev.test' : 'user@dev.test',
+            role:  isWorkerPage ? 'worker'           : 'user'
+        };
+        this.populateUserUI(this.currentUser);
+        if (isWorkerPage) this.loadWorkerContent();
+        else this.loadUserContent();
+        // ── END DEV BYPASS ──
     },
 
-    loadUserData() {
-        const user = JSON.parse(localStorage.getItem('shohoj_sheba_user'));
-        const nameElements = ['sidebarUserName', 'profileName', 'profileNameLarge', 'profileNameDetail'];
-        const emailElements = ['sidebarUserEmail', 'profileEmailLarge', 'profileEmail'];
+    // ─── Populate name / email fields ─────────────────
+    populateUserUI(user) {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        nameElements.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = user.name;
-        });
-        emailElements.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = user.email;
-        });
+        set('sidebarUserName',  user.name);
+        set('sidebarUserEmail', user.email);
+        set('profileName',      user.name);
+        set('profileNameLarge', user.name);
+        set('profileNameDetail',user.name);
+        set('profileEmail',     user.email);
+        set('profileEmailSide', user.email);
+
+        // Member since — real value comes from DB; show placeholder until then
+        set('profileJoinDate', '—');
     },
 
+    // ─── SPA navigation ───────────────────────────────
     setupNavigation() {
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
+        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+            item.addEventListener('click', () => {
                 const page = item.getAttribute('data-page');
                 this.showPage(page);
-                
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
             });
         });
     },
 
     showPage(pageId) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById(`${pageId}-page`);
-        if (target) {
-            target.classList.add('active');
-            const title = pageId.charAt(0).toUpperCase() + pageId.slice(1);
-            document.getElementById('pageTitle').textContent = title.replace('-', ' ');
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        // Deactivate all nav items
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        // Show target page
+        const target = document.getElementById(pageId + '-page');
+        if (target) target.classList.add('active');
+
+        // Activate matching nav item
+        const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+        if (navItem) navItem.classList.add('active');
+
+        // Update topbar title
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) {
+            const labels = {
+                'overview':    'Overview',
+                'bookings':    'My Bookings',
+                'new-booking': 'New Booking',
+                'history':     'History',
+                'favorites':   'Favorites',
+                'profile':     'Profile',
+                'jobs':        'Available Jobs',
+                'my-jobs':     'My Jobs',
+                'completed':   'Completed Jobs',
+                'earnings':    'Earnings',
+            };
+            titleEl.textContent = labels[pageId] || pageId;
         }
     },
 
-    loadWorkerContent() {
-        const container = document.getElementById('availableJobs');
-        if (!container) return;
-        
-        const mockJobs = [
-            { title: "Leaking Tap Repair", loc: "Mirpur 10", pay: "৳500" },
-            { title: "Furniture Assembly", loc: "Uttara Sector 4", pay: "৳1200" }
-        ];
-
-        container.innerHTML = mockJobs.map(job => `
-            <div class="job-card">
-                <div>
-                    <strong>${job.title}</strong>
-                    <p style="font-size:12px; color:#64748b;"><i class="fa-solid fa-location-dot"></i> ${job.loc}</p>
-                </div>
-                <div style="text-align:right">
-                    <div style="font-weight:bold; color:#2e7d32; margin-bottom:5px;">${job.pay}</div>
-                    <button class="btn-sm-primary">Accept</button>
-                </div>
-            </div>
-        `).join('');
-    },
-
+    // ─── User dashboard data ──────────────────────────
     loadUserContent() {
-        // Here you would populate the "Booked Services" for the customer
+        // TODO: fetch('api/user-stats.php') and fetch('api/bookings.php')
+        // Set stats to dashes until DB is connected
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('statTotal',     '—');
+        set('statPending',   '—');
+        set('statCompleted', '—');
+        set('statSpent',     '—');
     },
 
-    setupSidebar() {
-        const toggle = document.getElementById('sidebarToggle');
-        const mobileBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.getElementById('sidebar');
+    // ─── Worker dashboard data ────────────────────────
+    loadWorkerContent() {
+        // TODO: fetch('api/worker-stats.php') and fetch('api/jobs.php?available=1')
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('statAvailable', '—');
+        set('statCompleted', '—');
+        set('statEarnings',  '—');
 
-        [toggle, mobileBtn].forEach(btn => {
-            if (btn) btn.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
-        });
+        // Earnings page
+        set('earnTotal',     '—');
+        set('earnMonth',     '—');
+        set('earnPending',   '—');
+        set('earnAvailable', '—');
+
+        // Profile extras
+        set('profileSpecialty', '—');
+        set('profileJobs',      '—');
     },
 
+    // ─── Logout ───────────────────────────────────────
     setupLogout() {
-        document.getElementById('logoutBtn')?.addEventListener('click', () => {
-            localStorage.removeItem('shohoj_sheba_user');
+        const doLogout = () => {
+            // TODO: fetch('api/logout.php', { method: 'POST' }).then(() => { window.location.href = 'index.html'; });
             window.location.href = 'index.html';
-        });
+        };
+
+        document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+        document.getElementById('profileLogout')?.addEventListener('click', doLogout);
+    },
+
+    // ─── Quick book (navigates to new-booking page) ───
+    quickBookService(serviceName) {
+        // TODO: open booking modal or pre-select service
+        this.showPage('new-booking');
     }
 };
 

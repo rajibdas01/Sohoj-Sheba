@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard — Shohoj Sheba</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="worker-dashboard-theme.css">
+</head>
+<body class="worker-dashboard">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="logo">
+            <div class="logo-mark">
+                <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <span>Sohoj<span class="logo-accent">Sheba</span></span>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="user-ava"><i class="fa-solid fa-hard-hat"></i></div>
+        <div class="user-meta">
+            <strong id="sidebarUserName">—</strong>
+            <span id="sidebarUserEmail">—</span>
+            <span class="worker-tag">Worker</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-label">Main</div>
+        <button class="nav-item active" data-page="overview">
+            <i class="fa-solid fa-grid-2"></i><span>Overview</span>
+        </button>
+        <button class="nav-item" data-page="jobs">
+            <i class="fa-solid fa-briefcase"></i><span>Available Jobs</span>
+        </button>
+        <button class="nav-item" data-page="my-jobs">
+            <i class="fa-solid fa-clipboard-list"></i><span>My Jobs</span>
+        </button>
+        <button class="nav-item" data-page="completed">
+            <i class="fa-solid fa-check-double"></i><span>Completed</span>
+        </button>
+
+        <div class="nav-label">Finance</div>
+        <button class="nav-item" data-page="earnings">
+            <i class="fa-solid fa-bangladeshi-taka-sign"></i><span>Earnings</span>
+        </button>
+
+        <div class="nav-label">Account</div>
+        <button class="nav-item" data-page="profile">
+            <i class="fa-solid fa-user"></i><span>Profile</span>
+        </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button class="logout-btn" id="logoutBtn">
+            <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+    <header class="topbar">
+        <button class="topbar-menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
+        <div class="topbar-title" id="pageTitle">Overview</div>
+        <div class="topbar-right">
+            <div class="topbar-icon-btn">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge">0</span>
+            </div>
+            <div class="topbar-avatar"><i class="fa-solid fa-hard-hat"></i></div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- OVERVIEW -->
+        <section id="overview-page" class="page active">
+            <div class="welcome-banner">
+                <div class="welcome-text">
+                    <h2>Welcome, <span id="profileName">—</span> 💪</h2>
+                    <p>Check your available jobs and manage your work.</p>
+                </div>
+                <button class="btn-primary" onclick="SohojShebaDashboard.showPage('jobs')">
+                    <i class="fa-solid fa-briefcase"></i> View Jobs
+                </button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-orange"><i class="fa-solid fa-briefcase"></i></div>
+                    <div><h3 id="statAvailable">—</h3><p>Available Jobs</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-green"><i class="fa-solid fa-check-double"></i></div>
+                    <div><h3 id="statCompleted">—</h3><p>Completed</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-amber"><i class="fa-solid fa-star"></i></div>
+                    <div><h3>4.8</h3><p>Rating</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrap si-blue"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
+                    <div><h3 id="statEarnings">—</h3><p>Total Earned</p></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-briefcase"></i> New Job Requests</h3>
+                    <a href="#" class="link-btn" onclick="SohojShebaDashboard.showPage('jobs');return false;">View All</a>
+                </div>
+                <div id="availableJobs">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-briefcase"></i></div>
+                        <h4>No jobs right now</h4>
+                        <p>New job requests will appear here once the database is connected.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AVAILABLE JOBS -->
+        <section id="jobs-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-briefcase"></i> Available Job Requests</h3>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active">All</button>
+                        <button class="filter-tab">Nearby</button>
+                        <button class="filter-tab">High Paying</button>
+                    </div>
+                </div>
+                <div id="workerJobs">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-briefcase"></i></div>
+                        <h4>No jobs available</h4>
+                        <p>Available jobs will load here once connected to the database.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MY JOBS -->
+        <section id="my-jobs-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-clipboard-list"></i> My Accepted Jobs</h3>
+                </div>
+                <div id="myAcceptedJobs">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <h4>No accepted jobs</h4>
+                        <p>Jobs you accept will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPLETED -->
+        <section id="completed-page" class="page">
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-check-double"></i> Completed Jobs</h3>
+                </div>
+                <div id="completedJobs">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-check-double"></i></div>
+                        <h4>No completed jobs yet</h4>
+                        <p>Your completed jobs and ratings will show here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EARNINGS -->
+        <section id="earnings-page" class="page">
+            <div class="earnings-grid">
+                <div class="earning-card ec-total">
+                    <div class="ec-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="ec-content"><h3 id="earnTotal">—</h3><p>Total Earnings</p></div>
+                </div>
+                <div class="earning-card ec-month">
+                    <div class="ec-icon"><i class="fa-solid fa-calendar"></i></div>
+                    <div class="ec-content"><h3 id="earnMonth">—</h3><p>This Month</p></div>
+                </div>
+                <div class="earning-card ec-pending">
+                    <div class="ec-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="ec-content"><h3 id="earnPending">—</h3><p>Pending</p></div>
+                </div>
+                <div class="earning-card ec-withdraw">
+                    <div class="ec-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    <div class="ec-content"><h3 id="earnAvailable">—</h3><p>Available</p></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fa-solid fa-list"></i> Recent Transactions</h3>
+                </div>
+                <div id="transactionList">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
+                        <h4>No transactions yet</h4>
+                        <p>Your payment history will appear here.</p>
+                    </div>
+                </div>
+                <button class="btn-withdraw">
+                    <i class="fa-solid fa-money-bill-wave"></i> Request Withdrawal
+                </button>
+            </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section id="profile-page" class="page">
+            <div class="profile-wrap">
+                <div class="profile-side">
+                    <div class="profile-ava"><i class="fa-solid fa-hard-hat"></i></div>
+                    <h3 id="profileNameLarge">—</h3>
+                    <p id="profileEmailSide">—</p>
+                    <span class="worker-badge">Worker Account</span>
+                    <div class="profile-rating-box">
+                        <div class="big-rating">4.8</div>
+                        <div class="rating-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <p>Based on customer reviews</p>
+                    </div>
+                </div>
+                <div class="profile-main">
+                    <h3>Account Details</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Full Name</label>
+                            <p id="profileNameDetail">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email Address</label>
+                            <p id="profileEmail">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Account Type</label>
+                            <p>Worker</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Member Since</label>
+                            <p id="profileJoinDate">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Specialty</label>
+                            <p id="profileSpecialty">—</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Jobs Completed</label>
+                            <p id="profileJobs">—</p>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="profile-actions">
+                        <button class="btn-secondary"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+                        <button class="btn-secondary"><i class="fa-solid fa-lock"></i> Change Password</button>
+                        <button class="btn-danger" id="profileLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="dashboard.js"></script>
+<script>
+    document.querySelectorAll('.filter-tabs').forEach(group => {
+        group.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                group.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    });
+    document.getElementById('menuBtn').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+</script>
+</body>
+</html>
