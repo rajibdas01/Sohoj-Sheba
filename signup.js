@@ -1,618 +1,255 @@
 /* =============================================
-   SHOHOJ SHEBA — SIGNUP.JS (FIXED)
-   Proper step highlighting in progress bar
+   SHOHOJ SHEBA — SIGNUP.JS
+   Stepper is 100% JS driven.
+   updateStepper() is the single source of truth.
    ============================================= */
 
-let currentStep = 1;
-const totalSteps = 4;
-let formData = {};
+var currentStep = 1;
+var TOTAL_STEPS  = 4;
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ Signup form initialized with proper step highlighting');
-    
-    setupRoleChange();
-    setupInputFocus();
-    setupFormValidation();
-    setupProgressBarNavigation();
-    updateWorkerFields();
-    setupAutoSave();
-    
-    // Initial progress bar update
-    updateProgressBar();
+/* ─── Boot ─────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* Set initial stepper state */
+    updateStepper();
+
+    /* Hide all back buttons on load (we're on step 1) */
+    updateButtons();
+
+    /* Role radio changes show/hide worker fields on step 4 */
+    document.querySelectorAll('input[name="role"]').forEach(function (r) {
+        r.addEventListener('change', syncWorkerFields);
+    });
+    syncWorkerFields();
+
+    /* Input focus ring */
+    document.querySelectorAll('.input-wrap input, .input-wrap select, .input-wrap textarea').forEach(function (el) {
+        el.addEventListener('focus', function () { el.closest('.input-wrap').classList.add('focused'); });
+        el.addEventListener('blur',  function () { el.closest('.input-wrap').classList.remove('focused'); });
+    });
+
+    /* Form submit */
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        handleSubmit();
+    });
 });
 
-// ===========================
-// AUTO-SAVE FORM DATA
-// ===========================
-function setupAutoSave() {
-    const form = document.getElementById('signupForm');
-    
-    form.addEventListener('input', (e) => {
-        saveFormData();
-    });
-    
-    form.addEventListener('change', (e) => {
-        saveFormData();
-    });
-}
-
-function saveFormData() {
-    const form = document.getElementById('signupForm');
-    const formDataObj = new FormData(form);
-    
-    formData = {};
-    
-    for (let [key, value] of formDataObj.entries()) {
-        if (key.endsWith('[]')) {
-            const arrayKey = key.replace('[]', '');
-            if (!formData[arrayKey]) formData[arrayKey] = [];
-            formData[arrayKey].push(value);
-        } else {
-            formData[key] = value;
-        }
-    }
-    
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        if (checkbox.name && !checkbox.name.endsWith('[]')) {
-            formData[checkbox.name] = checkbox.checked;
-        }
-    });
-}
-
-function restoreFormData() {
-    const form = document.getElementById('signupForm');
-    
-    Object.keys(formData).forEach(key => {
-        const value = formData[key];
-        
-        if (Array.isArray(value)) {
-            value.forEach(val => {
-                const checkbox = form.querySelector(`input[name="${key}[]"][value="${val}"]`);
-                if (checkbox) checkbox.checked = true;
-            });
-        } else {
-            const input = form.querySelector(`[name="${key}"]`);
-            if (input) {
-                if (input.type === 'checkbox') {
-                    input.checked = value;
-                } else if (input.type === 'radio') {
-                    const radio = form.querySelector(`input[name="${key}"][value="${value}"]`);
-                    if (radio) radio.checked = true;
-                } else {
-                    input.value = value;
-                }
-            }
-        }
-    });
-}
-
-// ===========================
-// STEP NAVIGATION
-// ===========================
+/* ─── Navigation ────────────────────────────── */
 function nextStep() {
-    if (!validateCurrentStep()) {
-        return;
-    }
-    
-    saveFormData();
-    
-    if (currentStep < totalSteps) {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < TOTAL_STEPS) {
         currentStep++;
-        updateStepDisplay();
+        showStep(currentStep);
     }
 }
 
 function prevStep() {
-    saveFormData();
-    
     if (currentStep > 1) {
         currentStep--;
-        updateStepDisplay();
+        showStep(currentStep);
     }
 }
 
-function goToStep(stepNumber) {
-    if (stepNumber < 1 || stepNumber > totalSteps) return;
-    
-    if (stepNumber > currentStep) {
-        if (!validateCurrentStep()) {
-            return;
-        }
-    }
-    
-    saveFormData();
-    
-    currentStep = stepNumber;
-    updateStepDisplay();
-}
-
-function updateStepDisplay() {
-    // Hide all steps
-    document.querySelectorAll('.form-step').forEach(step => {
-        step.classList.remove('active');
+function showStep(n) {
+    /* Hide all steps */
+    document.querySelectorAll('.form-step').forEach(function (s) {
+        s.classList.remove('active');
     });
-    
-    // Show current step
-    const activeStep = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-    if (activeStep) {
-        activeStep.classList.add('active');
-    }
-    
-    // Restore saved data
-    restoreFormData();
-    
-    // Update progress bar
-    updateProgressBar();
-    
-    // Update back button visibility
-    updateNavigationButtons();
-    
-    // Scroll to top
+
+    /* Show target step */
+    var target = document.querySelector('.form-step[data-step="' + n + '"]');
+    if (target) target.classList.add('active');
+
+    /* Update stepper visuals */
+    updateStepper();
+    updateButtons();
+
+    /* Scroll to top of form */
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ===========================
-// PROGRESS BAR UPDATE (FIXED)
-// ===========================
-function updateProgressBar() {
-    const progressBar = document.querySelector('.progress-bar');
-    
-    // Set data attribute for CSS styling
-    if (progressBar) {
-        progressBar.setAttribute('data-current', currentStep);
+/* ─── Stepper visual update ─────────────────── */
+/*
+   Layout: 4 dots spaced evenly across 100%.
+   Dot centres are at: 12.5%, 37.5%, 62.5%, 87.5%
+   (each dot owns 25% of width; centre = midpoint of that slot)
+
+   Fill line starts at first dot centre (12.5%)
+   and grows rightward toward the active dot centre.
+
+   Gap between adjacent dot centres = 25%.
+   Fill width per completed gap:
+     step 1 → 0   gaps → fill = 0%  (from 12.5% to 12.5%)
+     step 2 → 1   gap  → fill = 25% (from 12.5% to 37.5%)
+     step 3 → 2   gaps → fill = 50% (from 12.5% to 62.5%)
+     step 4 → 3   gaps → fill = 75% (from 12.5% to 87.5%)
+
+   But .stepper-fill starts at left:0, so we need to offset:
+     actual fill element left  = 12.5%
+     actual fill element width = (currentStep - 1) * 25%
+*/
+function updateStepper() {
+    var fillEl = document.getElementById('stepperFill');
+
+    /* Position the fill correctly */
+    if (fillEl) {
+        fillEl.style.left  = '12.5%';
+        fillEl.style.width = ((currentStep - 1) * 25) + '%';
     }
-    
-    // Update each step's state
-    document.querySelectorAll('.progress-step').forEach((step, index) => {
-        const stepNum = index + 1;
-        
-        // Remove all classes first
-        step.classList.remove('active', 'completed');
-        
-        if (stepNum < currentStep) {
-            // Steps before current = completed (green with checkmark)
-            step.classList.add('completed');
-        } else if (stepNum === currentStep) {
-            // Current step = active (green highlighted)
-            step.classList.add('active');
+
+    /* Update each dot */
+    for (var i = 1; i <= TOTAL_STEPS; i++) {
+        var dot = document.getElementById('sdot' + i);
+        if (!dot) continue;
+
+        /* Remove all states first */
+        dot.classList.remove('is-active', 'is-done');
+
+        if (i < currentStep) {
+            dot.classList.add('is-done');
+        } else if (i === currentStep) {
+            dot.classList.add('is-active');
         }
-        // Steps after current = default (gray)
+        /* future steps: no class = grey default */
+    }
+}
+
+/* ─── Show/hide back button ─────────────────── */
+function updateButtons() {
+    document.querySelectorAll('.btn-back').forEach(function (btn) {
+        btn.style.display = (currentStep === 1) ? 'none' : 'inline-flex';
     });
 }
 
-function updateNavigationButtons() {
-    const backButtons = document.querySelectorAll('.btn-back');
-    
-    backButtons.forEach(btn => {
-        if (currentStep === 1) {
-            btn.style.display = 'none';
-        } else {
-            btn.style.display = 'inline-flex';
-        }
-    });
+/* ─── Worker/user field toggle ──────────────── */
+function syncWorkerFields() {
+    var role = document.querySelector('input[name="role"]:checked');
+    var isWorker = role && role.value === 'worker';
+
+    var wf  = document.querySelector('.worker-fields');
+    var uf  = document.querySelector('.user-fields');
+
+    if (wf) wf.style.display = isWorker ? 'block' : 'none';
+    if (uf) uf.style.display = isWorker ? 'none'  : 'block';
+
+    /* Update step 4 stepper label */
+    var lbl = document.getElementById('step4Label');
+    if (lbl) lbl.textContent = isWorker ? 'Professional Info' : 'Preferences';
+
+    /* Update step 4 form heading & subtitle */
+    var title = document.getElementById('step4Title');
+    var sub   = document.getElementById('step4Subtitle');
+    if (title) title.textContent = isWorker ? 'Professional Information'      : 'Your Preferences';
+    if (sub)   sub.textContent   = isWorker ? 'Tell us about your professional background' : 'Personalise your Shohoj Sheba experience';
 }
 
-// ===========================
-// PROGRESS BAR NAVIGATION
-// ===========================
-function setupProgressBarNavigation() {
-    document.querySelectorAll('.progress-step').forEach((step, index) => {
-        step.style.cursor = 'pointer';
-        
-        step.addEventListener('click', () => {
-            const stepNumber = index + 1;
-            
-            if (stepNumber <= currentStep + 1) {
-                goToStep(stepNumber);
-            } else {
-                showInfo('Please complete the current step first');
-            }
-        });
-    });
-}
+/* ─── Per-step validation ───────────────────── */
+function validateStep(n) {
+    if (n === 1) return true; /* Role selection always valid */
 
-// ===========================
-// VALIDATION
-// ===========================
-function validateCurrentStep() {
-    const currentStepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-    
-    if (!currentStepElement) return false;
-    
-    if (currentStep === 1) {
+    if (n === 2) {
+        var fn = document.querySelector('[name="firstName"]');
+        var ln = document.querySelector('[name="lastName"]');
+        var em = document.querySelector('[name="email"]');
+        var pw = document.querySelector('[name="password"]');
+        var cp = document.querySelector('[name="confirmPassword"]');
+        var db = document.querySelector('[name="dateOfBirth"]');
+        var gn = document.querySelector('[name="gender"]');
+
+        if (!fn || !fn.value.trim()) { showToast('Please enter your first name', 'error'); fn && fn.focus(); return false; }
+        if (!ln || !ln.value.trim()) { showToast('Please enter your last name', 'error');  ln && ln.focus(); return false; }
+        if (!em || !isValidEmail(em.value)) { showToast('Please enter a valid email address', 'error'); em && em.focus(); return false; }
+        if (!pw || pw.value.length < 6) { showToast('Password must be at least 6 characters', 'error'); pw && pw.focus(); return false; }
+        if (!cp || pw.value !== cp.value) { showToast('Passwords do not match', 'error'); cp && cp.focus(); return false; }
+        if (!db || !db.value) { showToast('Please select your date of birth', 'error'); db && db.focus(); return false; }
+        if (!gn || !gn.value) { showToast('Please select your gender', 'error'); gn && gn.focus(); return false; }
         return true;
     }
-    
-    if (currentStep === 2) {
-        const firstName = currentStepElement.querySelector('[name="firstName"]');
-        const lastName = currentStepElement.querySelector('[name="lastName"]');
-        const email = currentStepElement.querySelector('[name="email"]');
-        const password = currentStepElement.querySelector('[name="password"]');
-        const confirmPassword = currentStepElement.querySelector('[name="confirmPassword"]');
-        const dateOfBirth = currentStepElement.querySelector('[name="dateOfBirth"]');
-        const gender = currentStepElement.querySelector('[name="gender"]');
-        
-        if (!firstName?.value.trim()) {
-            showError('Please enter your first name');
-            firstName?.focus();
-            return false;
-        }
-        
-        if (!lastName?.value.trim()) {
-            showError('Please enter your last name');
-            lastName?.focus();
-            return false;
-        }
-        
-        if (!email?.value.trim() || !validateEmail(email.value)) {
-            showError('Please enter a valid email address');
-            email?.focus();
-            return false;
-        }
-        
-        if (!password?.value || password.value.length < 6) {
-            showError('Password must be at least 6 characters');
-            password?.focus();
-            return false;
-        }
-        
-        if (password.value !== confirmPassword?.value) {
-            showError('Passwords do not match');
-            confirmPassword?.focus();
-            return false;
-        }
-        
-        if (!dateOfBirth?.value) {
-            showError('Please select your date of birth');
-            dateOfBirth?.focus();
-            return false;
-        }
-        
-        const age = calculateAge(new Date(dateOfBirth.value));
-        if (age < 18) {
-            showError('You must be at least 18 years old to sign up');
-            return false;
-        }
-        
-        if (!gender?.value) {
-            showError('Please select your gender');
-            gender?.focus();
-            return false;
-        }
-        
+
+    if (n === 3) {
+        var ph = document.querySelector('[name="phone"]');
+        var ct = document.querySelector('[name="country"]');
+        var cy = document.querySelector('[name="city"]');
+        var ar = document.querySelector('[name="area"]');
+        var ad = document.querySelector('[name="address"]');
+
+        if (!ph || !ph.value.trim()) { showToast('Please enter your phone number', 'error'); ph && ph.focus(); return false; }
+        if (!ct || !ct.value)        { showToast('Please select your country', 'error');       ct && ct.focus(); return false; }
+        if (!cy || !cy.value)        { showToast('Please select your city', 'error');           cy && cy.focus(); return false; }
+        if (!ar || !ar.value.trim()) { showToast('Please enter your area/district', 'error');   ar && ar.focus(); return false; }
+        if (!ad || !ad.value.trim()) { showToast('Please enter your street address', 'error');  ad && ad.focus(); return false; }
         return true;
     }
-    
-    if (currentStep === 3) {
-        const phone = currentStepElement.querySelector('[name="phone"]');
-        const country = currentStepElement.querySelector('[name="country"]');
-        const city = currentStepElement.querySelector('[name="city"]');
-        const area = currentStepElement.querySelector('[name="area"]');
-        const address = currentStepElement.querySelector('[name="address"]');
-        
-        if (!phone?.value.trim()) {
-            showError('Please enter your phone number');
-            phone?.focus();
-            return false;
-        }
-        
-        if (!country?.value) {
-            showError('Please select your country');
-            country?.focus();
-            return false;
-        }
-        
-        if (!city?.value) {
-            showError('Please select your city');
-            city?.focus();
-            return false;
-        }
-        
-        if (!area?.value.trim()) {
-            showError('Please enter your area/district');
-            area?.focus();
-            return false;
-        }
-        
-        if (!address?.value.trim()) {
-            showError('Please enter your street address');
-            address?.focus();
-            return false;
-        }
-        
+
+    if (n === 4) {
+        var terms = document.getElementById('terms');
+        if (!terms || !terms.checked) { showToast('You must agree to the Terms & Conditions', 'error'); return false; }
         return true;
     }
-    
-    if (currentStep === 4) {
-        const role = document.querySelector('input[name="role"]:checked')?.value;
-        const terms = currentStepElement.querySelector('[name="terms"]');
-        
-        if (role === 'worker') {
-            const experience = currentStepElement.querySelector('[name="experience"]');
-            const services = currentStepElement.querySelectorAll('[name="services[]"]:checked');
-            const nidNumber = currentStepElement.querySelector('[name="nidNumber"]');
-            
-            if (!experience?.value) {
-                showError('Please select your work experience');
-                experience?.focus();
-                return false;
-            }
-            
-            if (services.length === 0) {
-                showError('Please select at least one service category');
-                return false;
-            }
-            
-            if (!nidNumber?.value.trim()) {
-                showError('Please enter your NID/Passport number');
-                nidNumber?.focus();
-                return false;
-            }
-        }
-        
-        if (!terms?.checked) {
-            showError('You must agree to the Terms & Conditions');
-            return false;
-        }
-        
-        return true;
-    }
-    
+
     return true;
 }
 
-// ===========================
-// ROLE CHANGE HANDLER
-// ===========================
-function setupRoleChange() {
-    document.querySelectorAll('input[name="role"]').forEach(radio => {
-        radio.addEventListener('change', updateWorkerFields);
-    });
+/* ─── Submit ────────────────────────────────── */
+function handleSubmit() {
+    if (!validateStep(4)) return;
+
+    var submitBtn = document.querySelector('.btn-submit');
+    var btnText   = submitBtn ? submitBtn.querySelector('.btn-text')   : null;
+    var btnLoader = submitBtn ? submitBtn.querySelector('.btn-loader') : null;
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (btnText)   btnText.style.display   = 'none';
+    if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+    /* TODO: replace with real fetch('api/signup.php', {...}) */
+    setTimeout(function () {
+        showToast('Account created successfully! Redirecting...', 'success');
+        setTimeout(function () { window.location.href = 'login.html'; }, 2000);
+    }, 1500);
 }
 
-function updateWorkerFields() {
-    const role = document.querySelector('input[name="role"]:checked')?.value;
-    const workerFields = document.querySelector('.worker-fields');
-    const userFields = document.querySelector('.user-fields');
-    const subtitle = document.getElementById('professionalSubtitle');
-    
-    if (role === 'worker') {
-        workerFields.style.display = 'block';
-        userFields.style.display = 'none';
-        subtitle.textContent = 'Tell us about your professional background';
-        
-        document.querySelectorAll('.worker-fields input[data-required="true"]').forEach(field => {
-            field.setAttribute('required', 'required');
-        });
-    } else {
-        workerFields.style.display = 'none';
-        userFields.style.display = 'block';
-        subtitle.textContent = 'Just a few more details to complete your profile';
-        
-        document.querySelectorAll('.worker-fields input[required]').forEach(field => {
-            field.removeAttribute('required');
-        });
-    }
-}
-
-// ===========================
-// FORM SUBMISSION
-// ===========================
-function setupFormValidation() {
-    const form = document.getElementById('signupForm');
-    
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!validateCurrentStep()) {
-            return;
-        }
-        
-        saveFormData();
-        
-        const submitBtn = form.querySelector('.btn-submit');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoader = submitBtn.querySelector('.btn-loader');
-        
-        submitBtn.disabled = true;
-        btnText.style.display = 'none';
-        btnLoader.style.display = 'inline-flex';
-        
-        try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            console.log('Form data to submit:', formData);
-            
-            showSuccess('Account created successfully! Redirecting to login...');
-            
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
-            
-        } catch (error) {
-            showError(error.message || 'Failed to create account. Please try again.');
-            submitBtn.disabled = false;
-            btnText.style.display = 'inline-flex';
-            btnLoader.style.display = 'none';
-        }
-    });
-}
-
-// ===========================
-// INPUT FOCUS EFFECTS
-// ===========================
-function setupInputFocus() {
-    document.querySelectorAll('.input-wrap input, .input-wrap select, .input-wrap textarea').forEach(input => {
-        input.addEventListener('focus', () => {
-            input.closest('.input-wrap')?.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', () => {
-            input.closest('.input-wrap')?.classList.remove('focused');
-        });
-    });
-}
-
-// ===========================
-// PASSWORD TOGGLE
-// ===========================
+/* ─── Password toggle ───────────────────────── */
 function togglePassword(fieldId, iconId) {
-    const field = document.getElementById(fieldId);
-    const icon = document.getElementById(iconId);
-    
+    var field = document.getElementById(fieldId);
+    var icon  = document.getElementById(iconId);
+    if (!field || !icon) return;
     if (field.type === 'password') {
         field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
     } else {
         field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
 }
 
-// ===========================
-// VALIDATION HELPERS
-// ===========================
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+/* ─── Email validation ──────────────────────── */
+function isValidEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-function calculateAge(birthDate) {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    
-    return age;
-}
+/* ─── Toast notifications ───────────────────── */
+var _toast = null;
 
-// ===========================
-// NOTIFICATIONS
-// ===========================
-function showError(message) {
-    removeExistingNotifications();
-    
-    const notification = document.createElement('div');
-    notification.className = 'form-notification error';
-    notification.innerHTML = `
-        <i class="fa-solid fa-circle-exclamation"></i>
-        <span>${message}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
+function showToast(msg, type) {
+    if (_toast) { _toast.remove(); _toast = null; }
 
-function showSuccess(message) {
-    removeExistingNotifications();
-    
-    const notification = document.createElement('div');
-    notification.className = 'form-notification success';
-    notification.innerHTML = `
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${message}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
+    var icons = { error: 'fa-circle-exclamation', success: 'fa-circle-check', info: 'fa-info-circle' };
 
-function showInfo(message) {
-    removeExistingNotifications();
-    
-    const notification = document.createElement('div');
-    notification.className = 'form-notification info';
-    notification.innerHTML = `
-        <i class="fa-solid fa-info-circle"></i>
-        <span>${message}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
+    _toast = document.createElement('div');
+    _toast.className = 'signup-toast ' + (type || 'info');
+    _toast.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i><span>' + msg + '</span>';
+    document.body.appendChild(_toast);
 
-function removeExistingNotifications() {
-    document.querySelectorAll('.form-notification').forEach(n => n.remove());
-}
+    /* Force reflow then add .show to trigger transition */
+    void _toast.offsetWidth;
+    _toast.classList.add('show');
 
-// Notification styles
-const notificationStyles = document.createElement('style');
-notificationStyles.textContent = `
-    .form-notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        z-index: 10001;
-        transform: translateX(400px);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 280px;
-        max-width: 400px;
-    }
-    
-    .form-notification.show {
-        transform: translateX(0);
-    }
-    
-    .form-notification i {
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-    
-    .form-notification.error {
-        background: linear-gradient(135deg, #dc2626, #ef4444);
-        color: white;
-    }
-    
-    .form-notification.success {
-        background: linear-gradient(135deg, #16a34a, #22c55e);
-        color: white;
-    }
-    
-    .form-notification.info {
-        background: linear-gradient(135deg, #1565c0, #1e88e5);
-        color: white;
-    }
-    
-    @media (max-width: 768px) {
-        .form-notification {
-            top: 10px;
-            right: 10px;
-            left: 10px;
-            min-width: unset;
+    setTimeout(function () {
+        if (_toast) {
+            _toast.classList.remove('show');
+            setTimeout(function () { if (_toast) { _toast.remove(); _toast = null; } }, 350);
         }
-    }
-`;
-document.head.appendChild(notificationStyles);
+    }, 4000);
+}

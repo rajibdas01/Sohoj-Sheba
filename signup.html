@@ -11,13 +11,10 @@
 </head>
 <body>
 
-<!-- Navbar -->
 <header>
     <div class="navbar">
         <a href="index.html" class="logo">
-            <div class="logo-mark">
-                <i class="fa-solid fa-house-chimney"></i>
-            </div>
+            <div class="logo-mark"><i class="fa-solid fa-house-chimney"></i></div>
             <span>Sohoj<span class="logo-accent">Sheba</span></span>
         </a>
         <div class="nav-actions">
@@ -27,48 +24,47 @@
     </div>
 </header>
 
-<!-- Signup Page -->
 <main class="signup-page">
     <div class="signup-container">
-        
-        <!-- Progress Indicator -->
-        <div class="progress-bar">
-            <div class="progress-step active" data-step="1">
-                <div class="step-number">1</div>
-                <span>Account Type</span>
+
+        <!-- STEPPER -->
+        <div class="stepper" id="stepper">
+            <div class="stepper-track"></div>
+            <div class="stepper-fill" id="stepperFill"></div>
+
+            <div class="stepper-step" id="sdot1">
+                <div class="step-circle"><span class="snum">1</span><span class="scheck">&#10003;</span></div>
+                <div class="step-label">Account Type</div>
             </div>
-            <div class="progress-step" data-step="2">
-                <div class="step-number">2</div>
-                <span>Personal Info</span>
+            <div class="stepper-step" id="sdot2">
+                <div class="step-circle"><span class="snum">2</span><span class="scheck">&#10003;</span></div>
+                <div class="step-label">Personal Info</div>
             </div>
-            <div class="progress-step" data-step="3">
-                <div class="step-number">3</div>
-                <span>Contact Details</span>
+            <div class="stepper-step" id="sdot3">
+                <div class="step-circle"><span class="snum">3</span><span class="scheck">&#10003;</span></div>
+                <div class="step-label">Contact Details</div>
             </div>
-            <div class="progress-step" data-step="4">
-                <div class="step-number">4</div>
-                <span>Professional Info</span>
+            <div class="stepper-step" id="sdot4">
+                <div class="step-circle"><span class="snum">4</span><span class="scheck">&#10003;</span></div>
+                <div class="step-label" id="step4Label">Professional Info</div>
             </div>
         </div>
 
-        <!-- Form Container -->
+        <!-- FORM -->
         <div class="signup-form-container">
-            <form id="signupForm" class="signup-form">
+            <form id="signupForm">
 
-                <!-- STEP 1: Account Type -->
+                <!-- STEP 1 -->
                 <div class="form-step active" data-step="1">
                     <div class="step-header">
                         <h2>Choose Account Type</h2>
                         <p>Select how you want to use Shohoj Sheba</p>
                     </div>
-
                     <div class="role-selection">
                         <label class="role-card">
                             <input type="radio" name="role" value="user" checked>
                             <div class="role-card-content">
-                                <div class="role-icon user-icon">
-                                    <i class="fa-solid fa-user"></i>
-                                </div>
+                                <div class="role-icon user-icon"><i class="fa-solid fa-user"></i></div>
                                 <h3>User Account</h3>
                                 <p>Book home services and connect with professionals</p>
                                 <ul class="role-features">
@@ -78,13 +74,10 @@
                                 </ul>
                             </div>
                         </label>
-
                         <label class="role-card">
                             <input type="radio" name="role" value="worker">
                             <div class="role-card-content">
-                                <div class="role-icon worker-icon">
-                                    <i class="fa-solid fa-hard-hat"></i>
-                                </div>
+                                <div class="role-icon worker-icon"><i class="fa-solid fa-hard-hat"></i></div>
                                 <h3>Worker Account</h3>
                                 <p>Offer your services and grow your business</p>
                                 <ul class="role-features">
@@ -95,79 +88,67 @@
                             </div>
                         </label>
                     </div>
-
-                    <button type="button" class="btn-next" onclick="nextStep()">
-                        Continue <i class="fa-solid fa-arrow-right"></i>
-                    </button>
+                    <div class="step-actions" style="justify-content:flex-end;">
+                        <button type="button" class="btn-next" onclick="nextStep()">Continue <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
                 </div>
 
-                <!-- STEP 2: Personal Information -->
+                <!-- STEP 2 -->
                 <div class="form-step" data-step="2">
                     <div class="step-header">
                         <h2>Personal Information</h2>
                         <p>Tell us about yourself</p>
                     </div>
-
                     <div class="form-grid">
                         <div class="form-group">
                             <label>First Name <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-user input-icon"></i>
-                                <input type="text" name="firstName" placeholder="Enter first name" required>
+                                <input type="text" name="firstName" placeholder="Enter first name">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Last Name <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-user input-icon"></i>
-                                <input type="text" name="lastName" placeholder="Enter last name" required>
+                                <input type="text" name="lastName" placeholder="Enter last name">
                             </div>
                         </div>
-
                         <div class="form-group full-width">
                             <label>Email Address <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-envelope input-icon"></i>
-                                <input type="email" name="email" placeholder="your.email@example.com" required>
+                                <input type="email" name="email" placeholder="your.email@example.com">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Password <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-lock input-icon"></i>
-                                <input type="password" name="password" id="password" placeholder="Min. 6 characters" required>
-                                <button type="button" class="toggle-pw" onclick="togglePassword('password', 'eyeIcon1')">
-                                    <i class="fa-solid fa-eye" id="eyeIcon1"></i>
-                                </button>
+                                <input type="password" name="password" id="password" placeholder="Min. 6 characters">
+                                <button type="button" class="toggle-pw" onclick="togglePassword('password','eyeIcon1')"><i class="fa-solid fa-eye" id="eyeIcon1"></i></button>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Confirm Password <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-lock input-icon"></i>
-                                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" required>
-                                <button type="button" class="toggle-pw" onclick="togglePassword('confirmPassword', 'eyeIcon2')">
-                                    <i class="fa-solid fa-eye" id="eyeIcon2"></i>
-                                </button>
+                                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password">
+                                <button type="button" class="toggle-pw" onclick="togglePassword('confirmPassword','eyeIcon2')"><i class="fa-solid fa-eye" id="eyeIcon2"></i></button>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Date of Birth <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-calendar input-icon"></i>
-                                <input type="date" name="dateOfBirth" required>
+                                <input type="date" name="dateOfBirth">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Gender <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-venus-mars input-icon"></i>
-                                <select name="gender" required>
+                                <select name="gender">
                                     <option value="">Select gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -177,33 +158,26 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="step-actions">
-                        <button type="button" class="btn-back" onclick="prevStep()">
-                            <i class="fa-solid fa-arrow-left"></i> Back
-                        </button>
-                        <button type="button" class="btn-next" onclick="nextStep()">
-                            Continue <i class="fa-solid fa-arrow-right"></i>
-                        </button>
+                        <button type="button" class="btn-back" onclick="prevStep()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                        <button type="button" class="btn-next" onclick="nextStep()">Continue <i class="fa-solid fa-arrow-right"></i></button>
                     </div>
                 </div>
 
-                <!-- STEP 3: Contact & Address -->
+                <!-- STEP 3 -->
                 <div class="form-step" data-step="3">
                     <div class="step-header">
                         <h2>Contact & Address Details</h2>
                         <p>How can we reach you?</p>
                     </div>
-
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label>Phone Number <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-phone input-icon"></i>
-                                <input type="tel" name="phone" placeholder="+880 1XXX-XXXXXX" required>
+                                <input type="tel" name="phone" placeholder="+880 1XXX-XXXXXX">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>WhatsApp Number</label>
                             <div class="input-wrap">
@@ -211,7 +185,6 @@
                                 <input type="tel" name="whatsapp" placeholder="+880 1XXX-XXXXXX">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Alternative Phone</label>
                             <div class="input-wrap">
@@ -219,12 +192,11 @@
                                 <input type="tel" name="alternativePhone" placeholder="+880 1XXX-XXXXXX">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Country <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-globe input-icon"></i>
-                                <select name="country" required>
+                                <select name="country">
                                     <option value="">Select country</option>
                                     <option value="bangladesh" selected>Bangladesh</option>
                                     <option value="india">India</option>
@@ -233,12 +205,11 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>City <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-city input-icon"></i>
-                                <select name="city" required>
+                                <select name="city">
                                     <option value="">Select division</option>
                                     <option value="dhaka">Dhaka</option>
                                     <option value="chittagong">Chittagong</option>
@@ -249,57 +220,48 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Area/District <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-map-pin input-icon"></i>
-                                <input type="text" name="area" placeholder="e.g., Mirpur, Gulshan" required>
+                                <input type="text" name="area" placeholder="e.g., Mirpur, Gulshan">
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label>Postal Code</label>
                             <div class="input-wrap">
-                                <i class="fa-solid fa-mailbox input-icon"></i>
+                                <i class="fa-solid fa-envelope input-icon"></i>
                                 <input type="text" name="postalCode" placeholder="Enter postal code">
                             </div>
                         </div>
-
                         <div class="form-group full-width">
                             <label>Street Address <span class="required">*</span></label>
                             <div class="input-wrap">
                                 <i class="fa-solid fa-location-dot input-icon"></i>
-                                <textarea name="address" rows="3" placeholder="House/Flat number, Street name, Landmark" required></textarea>
+                                <textarea name="address" rows="3" placeholder="House/Flat number, Street name, Landmark"></textarea>
                             </div>
                         </div>
                     </div>
-
                     <div class="step-actions">
-                        <button type="button" class="btn-back" onclick="prevStep()">
-                            <i class="fa-solid fa-arrow-left"></i> Back
-                        </button>
-                        <button type="button" class="btn-next" onclick="nextStep()">
-                            Continue <i class="fa-solid fa-arrow-right"></i>
-                        </button>
+                        <button type="button" class="btn-back" onclick="prevStep()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                        <button type="button" class="btn-next" onclick="nextStep()">Continue <i class="fa-solid fa-arrow-right"></i></button>
                     </div>
                 </div>
 
-                <!-- STEP 4: Professional Information (For Workers) -->
+                <!-- STEP 4 -->
                 <div class="form-step" data-step="4">
                     <div class="step-header">
-                        <h2>Professional Information</h2>
-                        <p id="professionalSubtitle">Additional details to complete your profile</p>
+                        <h2 id="step4Title">Professional Information</h2>
+                        <p id="step4Subtitle">Tell us about your professional background</p>
                     </div>
 
-                    <!-- Worker-specific fields -->
                     <div class="worker-fields">
                         <div class="form-grid">
                             <div class="form-group full-width">
                                 <label>Work Experience <span class="required">*</span></label>
                                 <div class="input-wrap">
                                     <i class="fa-solid fa-briefcase input-icon"></i>
-                                    <select name="experience" required>
+                                    <select name="experience">
                                         <option value="">Select experience</option>
                                         <option value="less-than-1">Less than 1 year</option>
                                         <option value="1-2">1-2 years</option>
@@ -309,53 +271,31 @@
                                     </select>
                                 </div>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Service Categories <span class="required">*</span></label>
                                 <div class="checkbox-grid">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="carpenter">
-                                        <span><i class="fa-solid fa-hammer"></i> Carpenter</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="plumber">
-                                        <span><i class="fa-solid fa-faucet-drip"></i> Plumber</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="electrician">
-                                        <span><i class="fa-solid fa-bolt"></i> Electrician</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="mason">
-                                        <span><i class="fa-solid fa-trowel-bricks"></i> Mason</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="gardener">
-                                        <span><i class="fa-solid fa-seedling"></i> Gardener</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="services[]" value="home-repair">
-                                        <span><i class="fa-solid fa-house-circle-check"></i> Home Repair</span>
-                                    </label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="carpenter"><span><i class="fa-solid fa-hammer"></i> Carpenter</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="plumber"><span><i class="fa-solid fa-faucet-drip"></i> Plumber</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="electrician"><span><i class="fa-solid fa-bolt"></i> Electrician</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="mason"><span><i class="fa-solid fa-trowel-bricks"></i> Mason</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="gardener"><span><i class="fa-solid fa-seedling"></i> Gardener</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="services[]" value="home-repair"><span><i class="fa-solid fa-house-circle-check"></i> Home Repair</span></label>
                                 </div>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Skills & Expertise</label>
                                 <div class="input-wrap">
                                     <i class="fa-solid fa-wrench input-icon"></i>
-                                    <textarea name="skills" rows="3" placeholder="Describe your skills, certifications, and expertise..."></textarea>
+                                    <textarea name="skills" rows="3" placeholder="Describe your skills and expertise..."></textarea>
                                 </div>
                             </div>
-
                             <div class="form-group">
                                 <label>NID/Passport Number <span class="required">*</span></label>
                                 <div class="input-wrap">
                                     <i class="fa-solid fa-id-card input-icon"></i>
-                                    <input type="text" name="nidNumber" placeholder="Enter NID or Passport number" required>
+                                    <input type="text" name="nidNumber" placeholder="Enter NID or Passport number">
                                 </div>
                             </div>
-
                             <div class="form-group">
                                 <label>Trade License (if any)</label>
                                 <div class="input-wrap">
@@ -363,7 +303,6 @@
                                     <input type="text" name="tradeLicense" placeholder="Enter license number">
                                 </div>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Upload Profile Photo</label>
                                 <div class="file-upload">
@@ -375,7 +314,6 @@
                                     </label>
                                 </div>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Upload NID/Passport Photo</label>
                                 <div class="file-upload">
@@ -390,16 +328,38 @@
                         </div>
                     </div>
 
-                    <!-- User-specific fields (minimal) -->
-                    <div class="user-fields" style="display: none;">
+                    <div class="user-fields" style="display:none;">
                         <div class="form-grid">
                             <div class="form-group full-width">
+                                <label>Services You're Interested In</label>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="carpenter"><span><i class="fa-solid fa-hammer"></i> Carpenter</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="plumber"><span><i class="fa-solid fa-faucet-drip"></i> Plumber</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="electrician"><span><i class="fa-solid fa-bolt"></i> Electrician</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="mason"><span><i class="fa-solid fa-trowel-bricks"></i> Mason</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="gardener"><span><i class="fa-solid fa-seedling"></i> Gardener</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" name="interests[]" value="home-repair"><span><i class="fa-solid fa-house-circle-check"></i> Home Repair</span></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Preferred Language</label>
+                                <div class="input-wrap">
+                                    <i class="fa-solid fa-language input-icon"></i>
+                                    <select name="language">
+                                        <option value="">Select language</option>
+                                        <option value="bangla" selected>বাংলা (Bangla)</option>
+                                        <option value="english">English</option>
+                                        <option value="both">Both</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label>How did you hear about us?</label>
                                 <div class="input-wrap">
                                     <i class="fa-solid fa-bullhorn input-icon"></i>
                                     <select name="referralSource">
                                         <option value="">Select source</option>
-                                        <option value="search-engine">Search Engine (Google, etc.)</option>
+                                        <option value="search-engine">Search Engine</option>
                                         <option value="social-media">Social Media</option>
                                         <option value="friend">Friend or Family</option>
                                         <option value="advertisement">Advertisement</option>
@@ -407,21 +367,19 @@
                                     </select>
                                 </div>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Special Requirements or Preferences</label>
                                 <div class="input-wrap">
                                     <i class="fa-solid fa-note-sticky input-icon"></i>
-                                    <textarea name="preferences" rows="3" placeholder="Any specific preferences or requirements..."></textarea>
+                                    <textarea name="preferences" rows="3" placeholder="Any specific preferences, accessibility needs, or requirements..."></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Terms & Conditions -->
                     <div class="terms-section">
                         <label class="checkbox-label">
-                            <input type="checkbox" name="terms" required>
+                            <input type="checkbox" name="terms" id="terms">
                             <span>I agree to the <a href="#" class="link">Terms & Conditions</a> and <a href="#" class="link">Privacy Policy</a></span>
                         </label>
                         <label class="checkbox-label">
@@ -431,16 +389,10 @@
                     </div>
 
                     <div class="step-actions">
-                        <button type="button" class="btn-back" onclick="prevStep()">
-                            <i class="fa-solid fa-arrow-left"></i> Back
-                        </button>
+                        <button type="button" class="btn-back" onclick="prevStep()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         <button type="submit" class="btn-submit">
-                            <span class="btn-text">
-                                <i class="fa-solid fa-check"></i> Create Account
-                            </span>
-                            <span class="btn-loader" style="display:none;">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...
-                            </span>
+                            <span class="btn-text"><i class="fa-solid fa-check"></i> Create Account</span>
+                            <span class="btn-loader" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Creating...</span>
                         </button>
                     </div>
                 </div>
@@ -448,7 +400,6 @@
             </form>
         </div>
 
-        <!-- Already have account link -->
         <div class="signup-footer">
             <p>Already have an account? <a href="login.html" class="link">Log In</a></p>
         </div>
@@ -456,6 +407,5 @@
 </main>
 
 <script src="signup.js"></script>
-
 </body>
 </html>

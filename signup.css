@@ -1,6 +1,5 @@
 /* =============================================
-   SHOHOJ SHEBA — SIGNUP.CSS (FIXED)
-   Proper step highlighting + smaller buttons
+   SHOHOJ SHEBA — SIGNUP.CSS
    ============================================= */
 
 .signup-page {
@@ -15,145 +14,126 @@
 }
 
 /* ===========================
-   PROGRESS BAR (FIXED HIGHLIGHTING)
+   STEPPER — 100% JS driven
+   No pseudo-elements, no data-attribute tricks.
+   JS sets inline styles directly.
    =========================== */
-.progress-bar {
+.stepper {
+    position: relative;
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 40px;
-    position: relative;
+    padding: 0 0 8px;
 }
 
-.progress-bar::before {
-    content: '';
+/* Grey background track */
+.stepper-track {
     position: absolute;
-    top: 20px;
+    top: 21px;
     left: 0;
     right: 0;
     height: 3px;
     background: #e2e8f0;
+    border-radius: 3px;
     z-index: 0;
 }
 
-/* Progress line that fills as you advance - SHOWS COMPLETION */
-.progress-bar::after {
-    content: '';
+/* Green fill — width set by JS via inline style */
+.stepper-fill {
     position: absolute;
-    top: 20px;
+    top: 21px;
     left: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--green), #43a047);
-    z-index: 0;
-    transition: width 0.4s ease;
+    width: 0;
+    background: linear-gradient(90deg, #2e7d32, #43a047);
+    border-radius: 3px;
+    z-index: 1;
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Progress fills based on COMPLETED steps, not current */
-.progress-bar[data-current="1"]::after { width: 0%; } /* On step 1, nothing filled yet */
-.progress-bar[data-current="2"]::after { width: 33.33%; } /* On step 2, step 1 is filled */
-.progress-bar[data-current="3"]::after { width: 66.66%; } /* On step 3, steps 1-2 are filled */
-.progress-bar[data-current="4"]::after { width: 100%; } /* On step 4, steps 1-3 are filled */
-
-.progress-step {
+/* Each step node */
+.stepper-step {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     position: relative;
-    z-index: 1;
-    flex: 1;
+    z-index: 2;
     cursor: pointer;
-    transition: all 0.3s;
+    flex: 1;
 }
 
-.progress-step:hover .step-number {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.step-number {
-    width: 42px;
-    height: 42px;
+/* The circle */
+.step-circle {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: white;
     border: 3px solid #e2e8f0;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    font-size: 16px;
-    color: #cbd5e1;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    transition: all 0.35s ease;
+    font-weight: 700;
+    font-size: 15px;
+    color: #b0bec5;
 }
 
-/* ACTIVE STEP - Current step is GREEN with visible number */
-.progress-step.active .step-number {
-    background: linear-gradient(135deg, var(--green), #43a047);
-    border-color: var(--green);
-    color: white;
-    font-size: 16px; /* Ensure number is visible */
-    box-shadow: 0 4px 16px rgba(46,125,50,0.4);
-    transform: scale(1.05);
+/* Number span — shown by default */
+.snum {
+    display: block;
+    line-height: 1;
 }
 
-/* COMPLETED STEPS - Previous steps with checkmark (NOT green background, just border) */
-.progress-step.completed .step-number {
-    background: white;
-    border-color: var(--green);
-    color: var(--green);
-}
-
-.progress-step.completed .step-number::before {
-    content: '✓';
-    position: absolute;
+/* Checkmark span — hidden by default */
+.scheck {
+    display: none;
     font-size: 18px;
     font-weight: 900;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--green);
+    line-height: 1;
 }
 
-/* Hide original number when completed, show checkmark */
-.progress-step.completed .step-number {
-    font-size: 0;
-}
-
-/* FUTURE STEPS - Not yet reached - SHOW NUMBERS */
-.progress-step:not(.active):not(.completed) .step-number {
-    background: white;
-    border-color: #e2e8f0;
-    color: #cbd5e1;
-    font-size: 16px; /* Ensure number is visible */
-}
-
-.progress-step span {
+/* Label below circle */
+.step-label {
     font-size: 13px;
     font-weight: 600;
     color: #94a3b8;
     text-align: center;
-    transition: all 0.3s;
+    transition: color 0.35s ease;
+    white-space: nowrap;
 }
 
-/* Active step label - GREEN (current step only) */
-.progress-step.active span {
-    color: var(--green);
+/* ---- ACTIVE state ---- */
+.stepper-step.is-active .step-circle {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    border-color: #2e7d32;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(46, 125, 50, 0.4);
+    transform: scale(1.08);
+}
+
+.stepper-step.is-active .step-label {
+    color: #2e7d32;
     font-weight: 700;
 }
 
-/* Completed step label - muted green (not as bright as active) */
-.progress-step.completed span {
-    color: #4caf50;
-    font-weight: 600;
+/* ---- COMPLETED state ---- */
+.stepper-step.is-done .step-circle {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    border-color: #2e7d32;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
-/* Hover effect */
-.progress-step:hover span {
-    color: var(--green);
-}
+/* Hide number, show checkmark when done */
+.stepper-step.is-done .snum  { display: none; }
+.stepper-step.is-done .scheck { display: block; color: #ffffff; }
 
-.progress-step.completed:hover .step-number {
-    box-shadow: 0 4px 12px rgba(46,125,50,0.4);
+.stepper-step.is-done .step-label {
+    color: #2e7d32;
+    font-weight: 700;
 }
 
 /* ===========================
@@ -163,7 +143,7 @@
     background: white;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     margin-bottom: 24px;
 }
 
@@ -173,18 +153,12 @@
 
 .form-step.active {
     display: block;
-    animation: fadeInUp 0.4s ease;
+    animation: fadeInUp 0.35s ease both;
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ===========================
@@ -209,7 +183,7 @@
 }
 
 /* ===========================
-   ROLE SELECTION (STEP 1)
+   ROLE SELECTION
    =========================== */
 .role-selection {
     display: grid;
@@ -218,13 +192,8 @@
     margin-bottom: 32px;
 }
 
-.role-card {
-    cursor: pointer;
-}
-
-.role-card input[type="radio"] {
-    display: none;
-}
+.role-card { cursor: pointer; }
+.role-card input[type="radio"] { display: none; }
 
 .role-card-content {
     border: 2px solid #e2e8f0;
@@ -239,7 +208,7 @@
 .role-card:hover .role-card-content {
     border-color: var(--green);
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(46,125,50,0.1);
+    box-shadow: 0 4px 16px rgba(46, 125, 50, 0.1);
 }
 
 .role-card input[type="radio"]:checked + .role-card-content {
@@ -260,24 +229,14 @@
     transition: all 0.3s;
 }
 
-.user-icon {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    color: var(--blue);
-}
-
-.worker-icon {
-    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-    color: #f57c00;
-}
+.user-icon   { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: var(--blue); }
+.worker-icon { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #f57c00; }
 
 .role-card input[type="radio"]:checked + .role-card-content .user-icon {
-    background: linear-gradient(135deg, var(--blue), #1e88e5);
-    color: white;
+    background: linear-gradient(135deg, var(--blue), #1e88e5); color: white;
 }
-
 .role-card input[type="radio"]:checked + .role-card-content .worker-icon {
-    background: linear-gradient(135deg, #f57c00, #fb8c00);
-    color: white;
+    background: linear-gradient(135deg, #f57c00, #fb8c00); color: white;
 }
 
 .role-card-content h3 {
@@ -294,12 +253,7 @@
     margin-bottom: 16px;
 }
 
-.role-features {
-    list-style: none;
-    text-align: left;
-    margin-top: 16px;
-}
-
+.role-features { list-style: none; text-align: left; margin-top: 16px; }
 .role-features li {
     font-size: 13px;
     color: var(--text);
@@ -308,11 +262,7 @@
     align-items: center;
     gap: 8px;
 }
-
-.role-features li i {
-    color: var(--green);
-    font-size: 12px;
-}
+.role-features li i { color: var(--green); font-size: 12px; }
 
 /* ===========================
    FORM GRID
@@ -324,9 +274,7 @@
     margin-bottom: 24px;
 }
 
-.form-group.full-width {
-    grid-column: 1 / -1;
-}
+.form-group.full-width { grid-column: 1 / -1; }
 
 .form-group label {
     display: block;
@@ -336,13 +284,12 @@
     margin-bottom: 8px;
 }
 
-.required {
-    color: #dc2626;
-}
+.required { color: #dc2626; }
 
-.input-wrap textarea {
+.input-wrap textarea,
+.input-wrap select {
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px 16px 12px 42px;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     font-family: 'DM Sans', sans-serif;
@@ -351,18 +298,6 @@
     background: #fafbfc;
     transition: all 0.3s;
     resize: vertical;
-}
-
-.input-wrap select {
-    width: 100%;
-    padding: 12px 42px 12px 42px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    background: #fafbfc;
-    transition: all 0.3s;
     cursor: pointer;
 }
 
@@ -371,7 +306,7 @@
     outline: none;
     border-color: var(--green);
     background: white;
-    box-shadow: 0 0 0 4px rgba(46,125,50,0.1);
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
 }
 
 /* ===========================
@@ -394,16 +329,9 @@
     transition: all 0.3s;
 }
 
-.checkbox-item:hover {
-    border-color: var(--green);
-    background: rgba(46,125,50,0.05);
-}
+.checkbox-item:hover { border-color: var(--green); background: rgba(46,125,50,0.05); }
 
-.checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
+.checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
 .checkbox-item span {
     font-size: 13px;
@@ -414,33 +342,12 @@
     gap: 6px;
 }
 
-.checkbox-item input[type="checkbox"]:checked ~ span {
-    color: var(--green);
-    font-weight: 600;
-}
-
-.checkbox-item i {
-    font-size: 14px;
-    color: var(--muted);
-}
-
-.checkbox-item input[type="checkbox"]:checked ~ span i {
-    color: var(--green);
-}
-
 /* ===========================
    FILE UPLOAD
    =========================== */
-.file-upload {
-    position: relative;
-}
+.file-upload { position: relative; }
 
-.file-upload input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+.file-upload input[type="file"] { position: absolute; opacity: 0; width: 0; height: 0; }
 
 .file-upload-label {
     border: 2px dashed #cbd5e1;
@@ -456,29 +363,13 @@
     background: #f8fafc;
 }
 
-.file-upload-label:hover {
-    border-color: var(--green);
-    background: rgba(46,125,50,0.05);
-}
-
-.file-upload-label i {
-    font-size: 32px;
-    color: var(--green);
-}
-
-.file-upload-label span {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.file-upload-label small {
-    font-size: 12px;
-    color: var(--muted);
-}
+.file-upload-label:hover { border-color: var(--green); background: rgba(46,125,50,0.05); }
+.file-upload-label i    { font-size: 32px; color: var(--green); }
+.file-upload-label span { font-size: 14px; font-weight: 600; color: var(--text); }
+.file-upload-label small { font-size: 12px; color: var(--muted); }
 
 /* ===========================
-   TERMS SECTION
+   TERMS
    =========================== */
 .terms-section {
     margin: 24px 0;
@@ -489,38 +380,20 @@
 
 .checkbox-label {
     display: flex;
-    align-items: start;
+    align-items: flex-start;
     gap: 10px;
     margin-bottom: 12px;
     cursor: pointer;
 }
 
-.checkbox-label:last-child {
-    margin-bottom: 0;
-}
-
-.checkbox-label input[type="checkbox"] {
-    margin-top: 2px;
-    cursor: pointer;
-}
-
-.checkbox-label span {
-    font-size: 14px;
-    color: var(--text);
-}
-
-.checkbox-label .link {
-    color: var(--green);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.checkbox-label .link:hover {
-    text-decoration: underline;
-}
+.checkbox-label:last-child { margin-bottom: 0; }
+.checkbox-label input[type="checkbox"] { margin-top: 2px; cursor: pointer; }
+.checkbox-label span { font-size: 14px; color: var(--text); }
+.checkbox-label .link { color: var(--green); text-decoration: none; font-weight: 600; }
+.checkbox-label .link:hover { text-decoration: underline; }
 
 /* ===========================
-   STEP ACTIONS (SMALLER BUTTONS)
+   STEP ACTIONS
    =========================== */
 .step-actions {
     display: flex;
@@ -532,11 +405,11 @@
 .btn-next,
 .btn-back,
 .btn-submit {
-    padding: 12px 24px; /* Reduced from 14px 28px */
+    padding: 12px 24px;
     border-radius: 10px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px; /* Reduced from 15px */
-    font-weight: 600; /* Reduced from 700 */
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
     display: inline-flex;
@@ -549,129 +422,85 @@
 .btn-submit {
     background: linear-gradient(135deg, var(--green), #43a047);
     color: white;
-    box-shadow: 0 4px 16px rgba(46,125,50,0.25); /* Reduced shadow */
-    max-width: 140px; /* Same as back button */
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.3);
 }
 
 .btn-next:hover,
 .btn-submit:hover {
     background: linear-gradient(135deg, var(--green-dark), var(--green));
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(46,125,50,0.3);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
 }
 
 .btn-back {
     background: white;
     color: var(--text);
     border: 2px solid #e2e8f0;
-    max-width: 140px; /* Limit back button width */
 }
 
 .btn-back:hover {
     border-color: var(--green);
-    background: rgba(46,125,50,0.05);
+    background: rgba(46, 125, 50, 0.05);
 }
 
-.btn-submit:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* ===========================
-   SIGNUP FOOTER
+   FOOTER
    =========================== */
 .signup-footer {
     text-align: center;
     padding: 20px;
 }
 
-.signup-footer p {
+.signup-footer p { font-size: 14px; color: var(--muted); }
+.signup-footer .link { color: var(--green); text-decoration: none; font-weight: 700; }
+.signup-footer .link:hover { text-decoration: underline; }
+
+/* ===========================
+   NOTIFICATIONS
+   =========================== */
+.signup-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 22px;
+    border-radius: 12px;
     font-size: 14px;
-    color: var(--muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    min-width: 260px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    color: white;
 }
 
-.signup-footer .link {
-    color: var(--green);
-    text-decoration: none;
-    font-weight: 700;
-}
-
-.signup-footer .link:hover {
-    text-decoration: underline;
-}
+.signup-toast.show    { transform: translateX(0); }
+.signup-toast.error   { background: linear-gradient(135deg, #dc2626, #ef4444); }
+.signup-toast.success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.signup-toast.info    { background: linear-gradient(135deg, #1565c0, #1e88e5); }
 
 /* ===========================
    RESPONSIVE
    =========================== */
 @media (max-width: 768px) {
-    .signup-page {
-        padding: 20px 16px;
-    }
-
-    .progress-bar {
-        margin-bottom: 24px;
-    }
-
-    .progress-step span {
-        font-size: 11px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 14px;
-    }
-
-    .signup-form-container {
-        padding: 24px;
-    }
-
-    .step-header h2 {
-        font-size: 24px;
-    }
-
-    .role-selection {
-        grid-template-columns: 1fr;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .checkbox-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .step-actions {
-        flex-direction: column-reverse;
-    }
-
-    .btn-next,
-    .btn-back,
-    .btn-submit {
-        width: 100%;
-        max-width: 100%;
-        justify-content: center;
-    }
+    .signup-page { padding: 20px 16px; }
+    .signup-form-container { padding: 24px; }
+    .role-selection { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+    .step-actions { flex-direction: column-reverse; }
+    .btn-next, .btn-back, .btn-submit { width: 100%; justify-content: center; }
+    .step-label { font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-    .signup-form-container {
-        padding: 20px;
-    }
-
-    .step-header h2 {
-        font-size: 20px;
-    }
-
-    .role-icon {
-        width: 64px;
-        height: 64px;
-        font-size: 28px;
-    }
-
-    .role-card-content {
-        padding: 24px 16px;
-    }
+    .signup-form-container { padding: 18px; }
+    .step-header h2 { font-size: 22px; }
+    .role-icon { width: 60px; height: 60px; font-size: 26px; }
+    .role-card-content { padding: 20px 14px; }
 }
