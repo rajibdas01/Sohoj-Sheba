@@ -10,7 +10,7 @@ SET NAMES utf8mb4;
 SET time_zone = "+00:00";
 
 -- 1) Create database
-CREATE DATABASE IF NOT EXISTS `sohoj_sheba`
+CREATE DATABASE `sohoj_sheba`
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_unicode_ci;
 
