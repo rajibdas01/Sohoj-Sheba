@@ -203,11 +203,45 @@ function handleSubmit() {
     if (btnText)   btnText.style.display   = 'none';
     if (btnLoader) btnLoader.style.display = 'inline-flex';
 
-    /* TODO: replace with real fetch('api/signup.php', {...}) */
-    setTimeout(function () {
-        showToast('Account created successfully! Redirecting...', 'success');
-        setTimeout(function () { window.location.href = 'login.html'; }, 2000);
-    }, 1500);
+    // Collect minimal fields needed by api/signup.php
+    var roleInput = document.querySelector('input[name="role"]:checked');
+    var role      = roleInput ? roleInput.value : 'user';
+
+    var firstName = document.querySelector('[name="firstName"]')?.value.trim() || '';
+    var lastName  = document.querySelector('[name="lastName"]')?.value.trim()  || '';
+    var email     = document.querySelector('[name="email"]')?.value.trim()     || '';
+    var password  = document.querySelector('[name="password"]')?.value         || '';
+
+    var fullName = (firstName + ' ' + lastName).trim() || firstName || lastName || 'User';
+
+    fetch('api/signup.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name:     fullName,
+            email:    email,
+            password: password,
+            role:     role
+        })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data && data.success) {
+            showToast('Account created successfully! Redirecting to login...', 'success');
+            setTimeout(function () { window.location.href = 'login.html'; }, 2000);
+        } else {
+            showToast((data && data.message) || 'Registration failed. Please try again.', 'error');
+            if (submitBtn) submitBtn.disabled = false;
+            if (btnText)   btnText.style.display   = 'inline-flex';
+            if (btnLoader) btnLoader.style.display = 'none';
+        }
+    })
+    .catch(function () {
+        showToast('Server error while creating account. Please try again.', 'error');
+        if (submitBtn) submitBtn.disabled = false;
+        if (btnText)   btnText.style.display   = 'inline-flex';
+        if (btnLoader) btnLoader.style.display = 'none';
+    });
 }
 
 /* ─── Password toggle ───────────────────────── */

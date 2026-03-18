@@ -10,34 +10,19 @@ const SohojShebaDashboard = {
 
     // ─── Auth check ───────────────────────────────────
     checkAuth() {
-        // TODO: Replace with → fetch('api/session.php')
-        /*
         fetch('api/session.php')
             .then(r => r.json())
             .then(data => {
                 if (!data.loggedIn) { window.location.href = 'login.html'; return; }
                 this.currentUser = data.user;
                 const isWorkerPage = document.body.classList.contains('worker-dashboard');
-                if (isWorkerPage && data.user.role !== 'worker') window.location.href = 'user-dashboard.html';
-                if (!isWorkerPage && data.user.role === 'worker') window.location.href = 'worker-dashboard.html';
+                if (isWorkerPage && data.user.role !== 'worker') { window.location.href = 'user-dashboard.html'; return; }
+                if (!isWorkerPage && data.user.role === 'worker') { window.location.href = 'worker-dashboard.html'; return; }
                 this.populateUserUI(data.user);
                 if (isWorkerPage) this.loadWorkerContent();
                 else this.loadUserContent();
             })
             .catch(() => { window.location.href = 'login.html'; });
-        */
-
-        // ── DEV BYPASS — remove this block and uncomment fetch() above when PHP is ready ──
-        const isWorkerPage = document.body.classList.contains('worker-dashboard');
-        this.currentUser = {
-            name:  isWorkerPage ? 'Dev Worker'      : 'Dev User',
-            email: isWorkerPage ? 'worker@dev.test' : 'user@dev.test',
-            role:  isWorkerPage ? 'worker'           : 'user'
-        };
-        this.populateUserUI(this.currentUser);
-        if (isWorkerPage) this.loadWorkerContent();
-        else this.loadUserContent();
-        // ── END DEV BYPASS ──
     },
 
     // ─── Populate name / email fields ─────────────────
@@ -132,8 +117,11 @@ const SohojShebaDashboard = {
     // ─── Logout ───────────────────────────────────────
     setupLogout() {
         const doLogout = () => {
-            // TODO: fetch('api/logout.php', { method: 'POST' }).then(() => { window.location.href = 'index.html'; });
-            window.location.href = 'index.html';
+            fetch('api/logout.php', { method: 'POST' })
+                .catch(() => {})
+                .finally(() => {
+                    window.location.href = 'index.html';
+                });
         };
 
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);

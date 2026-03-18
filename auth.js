@@ -26,8 +26,6 @@ function handleSignup(e) {
     text.style.display   = 'none';
     loader.style.display = 'inline-flex';
 
-    // TODO: uncomment when api/signup.php is ready
-    /*
     fetch('api/signup.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,10 +44,6 @@ function handleSignup(e) {
         showFormError('Server error. Please try again.');
         resetBtn(btn, text, loader);
     });
-    */
-
-    resetBtn(btn, text, loader);
-    showFormError('Sign up is not available yet. The database has not been connected.');
 }
 
 // ─── Login ────────────────────────────────────
@@ -68,8 +62,6 @@ function handleLogin(e) {
     text.style.display   = 'none';
     loader.style.display = 'inline-flex';
 
-    // TODO: uncomment when api/login.php is ready
-    /*
     fetch('api/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,10 +84,6 @@ function handleLogin(e) {
         showFormError('Server error. Please try again.');
         resetBtn(btn, text, loader);
     });
-    */
-
-    resetBtn(btn, text, loader);
-    showFormError('Login is not available yet. The database has not been connected.');
 }
 
 // ─── Password toggle ──────────────────────────
