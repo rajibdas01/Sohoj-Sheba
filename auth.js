@@ -1,5 +1,4 @@
 
-
 // ─── Signup ───────────────────────────────────
 function handleSignup(e) {
     e.preventDefault();
