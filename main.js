@@ -1,9 +1,11 @@
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ Shohoj Sheba Landing Page Initialized');
+    console.log(' Shohoj Sheba Landing Page Initialized');
 
+    // Returns the first matched element for easier DOM reads.
     const $ = (sel) => document.querySelector(sel);
+    // Returns all matched elements for simple loop binding.
     const $$ = (sel) => document.querySelectorAll(sel);
 
     // ─────────────────────────────────────────────

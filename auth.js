@@ -1,5 +1,6 @@
 
 // ─── Signup ───────────────────────────────────
+// Handles signup form submit, validation, API call, and redirect.
 function handleSignup(e) {
     e.preventDefault();
 
@@ -34,6 +35,7 @@ function handleSignup(e) {
 }
 
 // ─── Login ────────────────────────────────────
+// Handles login form submit, API call, and role-based redirect.
 function handleLogin(e) {
     e.preventDefault();
 
@@ -64,6 +66,7 @@ function handleLogin(e) {
 }
 
 // ─── Password toggle ──────────────────────────
+// Toggles password input visibility and eye icon state.
 function togglePassword() {
     const pw   = document.getElementById('password');
     const icon = document.getElementById('eyeIcon');
@@ -77,6 +80,7 @@ function togglePassword() {
 }
 
 // ─── Helpers ──────────────────────────────────
+// Sends a JSON POST request and returns parsed JSON response.
 function postJson(url, body) {
     return fetch(url, {
         method: 'POST',
@@ -85,12 +89,14 @@ function postJson(url, body) {
     }).then(r => r.json());
 }
 
+// Shows button loading state and prevents repeat submit.
 function setBtnLoading(btn, text, loader, isLoading) {
     btn.disabled = !!isLoading;
     text.style.display = isLoading ? 'none' : 'inline-flex';
     loader.style.display = isLoading ? 'inline-flex' : 'none';
 }
 
+// Displays a temporary inline form error banner for user feedback.
 function showFormError(msg) {
     var existing = document.getElementById('form-error-banner');
     if (existing) existing.remove();

@@ -8,6 +8,7 @@ if (!$user || empty($user['id'])) {
     json_response(['loggedIn' => false]);
 }
 
+// Returns worker photo from worker_profiles when users photo is empty.
 function worker_photo_fallback(mysqli $conn, int $userId, ?string $currentPhoto): ?string
 {
     if ($currentPhoto !== null && trim($currentPhoto) !== '') {

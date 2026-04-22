@@ -9,6 +9,7 @@ const SohojShebaDashboard = {
     _userBookingFilter: 'all',
     _workerJobsFilter: 'all',
 
+    // Starts dashboard loading, events, and initial data fetch.
     init() {
         this.checkAuth();
         this.setupNavigation();
@@ -18,6 +19,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Auth check ───────────────────────────────────
+    // Validates session and redirects users to the correct dashboard.
     checkAuth() {
         fetch('api/session.php')
             .then(r => r.json())
@@ -37,6 +39,7 @@ const SohojShebaDashboard = {
             .catch(() => { window.location.href = 'login.html'; });
     },
 
+    // Fills small header/sidebar profile info immediately after login check.
     populateUserUI(user) {
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
         set('sidebarUserName',  user.name);
@@ -46,6 +49,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Load full profile ────────────────────────────
+    // Loads full profile data used by profile sections and edit modal.
     loadProfile() {
         fetch('api/profile.php')
             .then(r => r.json())
@@ -59,24 +63,29 @@ const SohojShebaDashboard = {
     },
 
     // ─── Helpers ──────────────────────────────────────
+    // Safely sets text for an element and shows dash for empty values.
     _set(id, val) {
         const el = document.getElementById(id);
         if (el) el.textContent = (val !== null && val !== undefined && String(val).trim() !== '') ? val : '—';
     },
+    // Formats a number as a whole number string.
     _fmtInt(n) {
         const v = Number(n || 0);
         if (!Number.isFinite(v)) return '0';
         return String(Math.round(v));
     },
+    // Formats amount in Bangladeshi Taka for UI cards.
     _fmtMoneyBDT(amount) {
         const n = Number(amount || 0);
         if (!Number.isFinite(n)) return '৳0';
         const rounded = Math.round(n);
         return `৳${rounded.toLocaleString('en-US')}`;
     },
+    // Returns unified booking status key from API row.
     _statusOf(row) {
         return String(row?.display_status || row?.status || '').toLowerCase();
     },
+    // Sums numeric price values from a booking/job list.
     _sumPrice(rows) {
         if (!Array.isArray(rows)) return 0;
         return rows.reduce((sum, r) => {
@@ -84,6 +93,14 @@ const SohojShebaDashboard = {
             return sum + (Number.isFinite(v) ? v : 0);
         }, 0);
     },
+    // Returns true when a date belongs to the current month/year.
+    _isSameMonth(dateStr, baseDate = new Date()) {
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return false;
+        return d.getMonth() === baseDate.getMonth() && d.getFullYear() === baseDate.getFullYear();
+    },
+    // Calculates and paints user overview stats from cached bookings.
     _updateUserOverview() {
         const list = Array.isArray(this._userBookingsCache) ? this._userBookingsCache : [];
         const total = list.length;
@@ -94,7 +111,7 @@ const SohojShebaDashboard = {
 
         const completed = list.filter(b => this._statusOf(b) === 'completed').length;
         const spent = this._sumPrice(list.filter(b => this._statusOf(b) === 'completed'));
-
+        //User overview stats
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         setTxt('statTotal', this._fmtInt(total));
         setTxt('statPending', this._fmtInt(pending));
@@ -114,30 +131,37 @@ const SohojShebaDashboard = {
                    </div>`;
         }
     },
+    // Calculates and paints worker overview and earnings stats.
     _updateWorkerOverview() {
         const pending = Array.isArray(this._workerPendingCache) ? this._workerPendingCache : [];
+        const myActive = Array.isArray(this._workerMyCache) ? this._workerMyCache : [];
         const completed = Array.isArray(this._workerCompletedCache) ? this._workerCompletedCache : [];
-
+        // For workers, totals come from pending/my/completed job caches.
         const availableJobs = pending.length;
         const completedJobs = completed.length;
-        const earned = this._sumPrice(completed);
-
+        const totalEarned = this._sumPrice(completed);
+        const monthEarned = this._sumPrice(completed.filter(j => this._isSameMonth(j.updated_at || j.created_at)));
+        const pendingEarn = this._sumPrice(myActive);
+        const availableWithdraw = Math.max(0, totalEarned - pendingEarn);
+        //Worker overview stats
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         setTxt('statAvailable', this._fmtInt(availableJobs));
         setTxt('statCompleted', this._fmtInt(completedJobs));
-        setTxt('statEarnings', this._fmtMoneyBDT(earned));
+        setTxt('statEarnings', this._fmtMoneyBDT(totalEarned));
 
         // Earnings page quick numbers (if present)
-        setTxt('earnTotal', this._fmtMoneyBDT(earned));
-        setTxt('earnMonth', '—');
-        setTxt('earnPending', '—');
-        setTxt('earnAvailable', this._fmtMoneyBDT(earned));
+        setTxt('earnTotal', this._fmtMoneyBDT(totalEarned));
+        setTxt('earnMonth', this._fmtMoneyBDT(monthEarned));
+        setTxt('earnPending', this._fmtMoneyBDT(pendingEarn));
+        setTxt('earnAvailable', this._fmtMoneyBDT(availableWithdraw));
     },
+    // Formats a date string to readable day-month-year.
     _formatDate(str) {
         if (!str) return '—';
         try { return new Date(str).toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' }); }
         catch { return str; }
     },
+    // Formats a datetime string to readable date plus time.
     _formatDateTime(str) {
         if (!str) return '—';
         try {
@@ -152,16 +176,19 @@ const SohojShebaDashboard = {
             return str;
         }
     },
+    // Converts slug-like text to a human-friendly capitalized label.
     _cap(str) {
         if (!str) return '—';
         return str.charAt(0).toUpperCase() + str.slice(1).replace(/-/g, ' ');
     },
+    // Converts experience code to readable experience text.
     _formatExp(val) {
         const map = { 'less-than-1':'Less than 1 year','1-2':'1-2 years','3-5':'3-5 years','5-10':'5-10 years','more-than-10':'More than 10 years' };
         return map[val] || val || '—';
     },
 
     // ─── Populate USER profile display ────────────────
+    // Renders full profile section for a normal user account.
     populateUserProfile(p) {
         const s = this._set.bind(this);
         s('sidebarUserName', p.name); s('sidebarUserEmail', p.email); s('profileName', p.name);
@@ -180,6 +207,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Populate WORKER profile display ──────────────
+    // Renders full profile section for a worker account.
     populateWorkerProfile(p) {
         const s = this._set.bind(this);
         s('sidebarUserName', p.name); s('sidebarUserEmail', p.email); s('profileName', p.name);
@@ -204,6 +232,7 @@ const SohojShebaDashboard = {
         this._setProfilePhoto(p.profile_photo_path);
     },
 
+    // Normalizes DB photo path into a browser-safe URL.
     _photoUrl(path) {
         if (!path || String(path).trim() === '') return '';
         let p = String(path).trim().replace(/\\/g, '/');
@@ -224,6 +253,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Updates avatar/photo in all dashboard avatar placeholders.
     _setProfilePhoto(photoPath) {
         const url = this._photoUrl(photoPath);
         if (!url) return;
@@ -257,10 +287,8 @@ const SohojShebaDashboard = {
         applyImg('.topbar-avatar',     'Profile photo');
     },
 
-    // ══════════════════════════════════════════════════
-    // EDIT PROFILE MODAL
-    // ══════════════════════════════════════════════════
-
+    
+    // Injects edit-profile, password, and booking modals into page.
     injectEditModal() {
         const isWorker = document.body.classList.contains('worker-dashboard');
 
@@ -626,6 +654,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Open modals & prefill ────────────────────────
+    // Opens profile edit modal and pre-fills current profile values.
     openEditModal() {
         const p = this._profileData;
         if (!p) { this._showToast('Profile not loaded yet, please wait.'); return; }
@@ -662,11 +691,13 @@ const SohojShebaDashboard = {
         setTimeout(() => document.getElementById('ep_name')?.focus(), 100);
     },
 
+    // Closes the edit-profile modal and restores body scroll.
     closeEditModal() {
         document.getElementById('editProfileModal').style.display = 'none';
         document.body.style.overflow = '';
     },
 
+    // Opens change-password modal and focuses first input.
     openChangePwModal() {
         document.getElementById('changePwForm').reset();
         this._clearAlert('cpAlert');
@@ -675,12 +706,14 @@ const SohojShebaDashboard = {
         setTimeout(() => document.getElementById('cp_current')?.focus(), 100);
     },
 
+    // Closes the change-password modal and restores body scroll.
     closeChangePwModal() {
         document.getElementById('changePwModal').style.display = 'none';
         document.body.style.overflow = '';
     },
 
     // ─── Bind modal events ────────────────────────────
+    // Wires modal button clicks, overlay close, ESC close, and submits.
     _bindModalEvents() {
         // Button delegation — catches dynamically added buttons in both dashboards
         document.addEventListener('click', e => {
@@ -713,6 +746,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Submit edit profile ──────────────────────────
+    // Sends edited profile form data to API and refreshes UI on success.
     _submitEditProfile() {
         const saveBtn = document.getElementById('epSaveBtn');
         const btnText = saveBtn.querySelector('.ep-btn-text');
@@ -754,6 +788,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Submit change password ────────────────────────
+    // Sends password change request with client-side validation.
     _submitChangePassword() {
         const saveBtn = document.getElementById('cpSaveBtn');
         const btnText = saveBtn.querySelector('.ep-btn-text');
@@ -796,6 +831,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── UI helpers ───────────────────────────────────
+    // Shows an inline modal alert message with icon style.
     _showAlert(id, type, msg) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -804,10 +840,12 @@ const SohojShebaDashboard = {
         el.style.display = 'flex';
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
+    // Clears and hides inline alert box.
     _clearAlert(id) {
         const el = document.getElementById(id);
         if (el) { el.style.display = 'none'; el.textContent = ''; }
     },
+    // Shows temporary toast notification at bottom-right.
     _showToast(msg) {
         const el = document.getElementById('epToast');
         if (!el) return;
@@ -819,6 +857,7 @@ const SohojShebaDashboard = {
             setTimeout(() => { el.style.display = 'none'; }, 400);
         }, 3200);
     },
+    // Toggles password field between hidden and visible.
     _togglePw(fieldId, btn) {
         const field = document.getElementById(fieldId);
         if (!field) return;
@@ -828,6 +867,7 @@ const SohojShebaDashboard = {
     },
 
     // ─── Inject modal CSS ─────────────────────────────
+    // Injects modal CSS styles so modals are fully self-contained.
     _injectModalStyles() {
         const style = document.createElement('style');
         style.textContent = `
@@ -975,16 +1015,15 @@ const SohojShebaDashboard = {
         document.head.appendChild(style);
     },
 
-    // ══════════════════════════════════════════════════
-    // SPA NAV & LIFECYCLE
-    // ══════════════════════════════════════════════════
-
+    
+    // Attaches sidebar navigation events for SPA-like page switches.
     setupNavigation() {
         document.querySelectorAll('.nav-item[data-page]').forEach(item => {
             item.addEventListener('click', () => this.showPage(item.getAttribute('data-page')));
         });
     },
 
+    // Switches active page and refreshes page-specific data when needed.
     showPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1007,10 +1046,12 @@ const SohojShebaDashboard = {
         if (pageId === 'jobs' || pageId === 'my-jobs') this.loadWorkerRequests();
     },
 
+    // Sets default placeholders for user dashboard cards before load.
     loadUserContent() {
         const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         set('statTotal','—'); set('statPending','—'); set('statCompleted','—'); set('statSpent','—');
     },
+    // Sets default placeholders for worker dashboard cards before load.
     loadWorkerContent() {
         const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         set('statAvailable','—'); set('statCompleted','—'); set('statEarnings','—');
@@ -1018,10 +1059,9 @@ const SohojShebaDashboard = {
         set('profileSpecialty','—'); set('profileJobs','0');
     },
 
-    // ══════════════════════════════════════════════════
-    // BOOKINGS / JOB REQUESTS
-    // ══════════════════════════════════════════════════
+   
 
+    // Sets booking related click handlers and worker profile toggles.
     setupBooking() {
         // User: click "Book Now" on a service
         document.addEventListener('click', e => {
@@ -1051,6 +1091,7 @@ const SohojShebaDashboard = {
         this.setupFilters();
     },
 
+    // Attaches filter tab behavior for user and worker job lists.
     setupFilters() {
         // User bookings filters
         document.querySelectorAll('#bookings-page .filter-tab').forEach(btn => {
@@ -1085,6 +1126,7 @@ const SohojShebaDashboard = {
         });
     },
 
+    // Performs fetch and returns parsed JSON or throws friendly error.
     async _fetchJson(url, opts) {
         const r = await fetch(url, opts);
         const j = await r.json().catch(() => ({}));
@@ -1092,6 +1134,7 @@ const SohojShebaDashboard = {
         return j;
     },
 
+    // Opens booking modal for selected service and loads worker options.
     openBookingModal(serviceSlug) {
         if (!this.currentUser || this.currentUser.role !== 'user') return;
         const modal = document.getElementById('bookingModal');
@@ -1119,6 +1162,7 @@ const SohojShebaDashboard = {
         this._loadWorkersForService(serviceSlug);
     },
 
+    // Closes booking modal and restores body scroll.
     closeBookingModal() {
         const modal = document.getElementById('bookingModal');
         if (!modal) return;
@@ -1126,6 +1170,7 @@ const SohojShebaDashboard = {
         document.body.style.overflow = '';
     },
 
+    // Loads workers for selected service and renders selectable cards.
     async _loadWorkersForService(serviceSlug) {
         try {
             const data = await this._fetchJson(`api/workers.php?service=${encodeURIComponent(serviceSlug)}`);
@@ -1205,6 +1250,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Submits user booking request to API from booking modal.
     async submitBooking() {
         const modal = document.getElementById('bookingModal');
         const form = document.getElementById('bookingForm');
@@ -1245,6 +1291,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Fetches user bookings and stores them for rendering/overview stats.
     async loadUserBookings() {
         if (!this.currentUser || this.currentUser.role !== 'user') return;
         const wrap = document.getElementById('userBookings');
@@ -1262,6 +1309,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Renders filtered user bookings list and history section.
     renderUserBookings() {
         const wrap = document.getElementById('userBookings');
         if (!wrap) return;
@@ -1285,6 +1333,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Fetches worker pending/my/completed jobs and updates UI caches.
     async loadWorkerRequests() {
         if (!this.currentUser || this.currentUser.role !== 'worker') return;
         const wrapA = document.getElementById('availableJobs');
@@ -1315,6 +1364,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Renders worker pending jobs list with applied filter mode.
     renderWorkerPendingJobs() {
         const wrapA = document.getElementById('availableJobs');
         const wrapB = document.getElementById('workerJobs');
@@ -1340,6 +1390,7 @@ const SohojShebaDashboard = {
         if (wrapB) wrapB.innerHTML = pHtml;
     },
 
+    // Renders worker accepted/in-progress jobs list.
     renderWorkerMyJobs() {
         const wrapMy = document.getElementById('myAcceptedJobs');
         if (!wrapMy) return;
@@ -1349,6 +1400,7 @@ const SohojShebaDashboard = {
             : `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-clipboard-list"></i></div><h4>No accepted jobs</h4><p>Jobs you accept will appear here.</p></div>`;
     },
 
+    // Renders worker completed jobs list.
     renderWorkerCompletedJobs() {
         const wrap = document.getElementById('completedJobs');
         if (!wrap) return;
@@ -1358,6 +1410,7 @@ const SohojShebaDashboard = {
             : `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-check-double"></i></div><h4>No completed jobs yet</h4><p>Completed jobs will appear here.</p></div>`;
     },
 
+    // Sends worker accept/deny decision for a pending booking.
     async workerDecision(bookingId, decision) {
         try {
             await this._fetchJson('api/bookings.php', {
@@ -1372,6 +1425,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Marks accepted/in-progress booking as completed by worker.
     async workerComplete(bookingId) {
         try {
             await this._fetchJson('api/bookings.php', {
@@ -1386,6 +1440,7 @@ const SohojShebaDashboard = {
         }
     },
 
+    // Builds one booking card HTML for user booking lists.
     _renderBookingCardForUser(b) {
         const status = this._prettyStatus(b.display_status || b.status);
         const when = b.scheduled_at ? this._formatDate(b.scheduled_at) : 'Not scheduled';
@@ -1403,6 +1458,7 @@ const SohojShebaDashboard = {
         </div>`;
     },
 
+    // Builds one job card HTML for worker job lists.
     _renderJobCardForWorker(b, showActions, isCompleted = false) {
         const when = b.scheduled_at ? this._formatDateTime(b.scheduled_at) : 'Not scheduled';
         const addr = b.address_text ? this._escapeHtml(b.address_text) : '—';
@@ -1441,6 +1497,7 @@ const SohojShebaDashboard = {
         </div>`;
     },
 
+    // Converts status key to readable label for UI badges.
     _prettyStatus(s) {
         const v = (s || '').toString().toLowerCase();
         if (v === 'pending') return 'Pending';
@@ -1452,6 +1509,7 @@ const SohojShebaDashboard = {
         return s || '—';
     },
 
+    // Escapes unsafe HTML characters before inserting dynamic text.
     _escapeHtml(str) {
         return String(str ?? '')
             .replace(/&/g, '&amp;')
@@ -1461,6 +1519,7 @@ const SohojShebaDashboard = {
             .replace(/'/g, '&#039;');
     },
 
+    // Attaches logout buttons and redirects to home after logout.
     setupLogout() {
         const doLogout = () => {
             fetch('api/logout.php', { method:'POST' }).catch(()=>{}).finally(() => { window.location.href = 'index.html'; });
@@ -1469,6 +1528,7 @@ const SohojShebaDashboard = {
         document.getElementById('profileLogout')?.addEventListener('click', doLogout);
     },
 
+    // Shortcut to open new-booking page from quick actions.
     quickBookService() { this.showPage('new-booking'); }
 };
 

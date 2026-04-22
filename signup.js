@@ -6,13 +6,10 @@ function $(sel) { return document.querySelector(sel); }
 function $all(sel) { return document.querySelectorAll(sel); }
 function byId(id) { return document.getElementById(id); }
 
-/* ─── Boot ─────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
 
     /* Set initial stepper state */
     updateStepper();
-
-    /* Hide all back buttons on load (we're on step 1) */
     updateButtons();
 
     /* Role radio changes show/hide worker fields on step 4 */
@@ -36,19 +33,22 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUploadFeedback();
 });
 
-/* ─── File upload: show selected filename + preview ───────────────── */
+/* File upload: show selected filename + preview */
 function setupFileUploadFeedback() {
+
     function escapeHtml(s) {
         if (!s) return '';
         return String(s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
-    }
+    }   
+    
     function formatSize(bytes) {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
+    
     function bind(inputId, wrapId, statusId) {
         var input = byId(inputId);
         var wrap = byId(wrapId);
@@ -100,6 +100,7 @@ function setupFileUploadFeedback() {
 }
 
 /* ─── Navigation ────────────────────────────── */
+// Moves to next step only when current step is valid.
 function nextStep() {
     if (!validateStep(currentStep)) return;
     if (currentStep < TOTAL_STEPS) {
@@ -108,6 +109,7 @@ function nextStep() {
     }
 }
 
+// Moves back one step in the multi-step signup form.
 function prevStep() {
     if (currentStep > 1) {
         currentStep--;
@@ -115,6 +117,7 @@ function prevStep() {
     }
 }
 
+// Displays a specific step and refreshes stepper visuals.
 function showStep(n) {
     /* Hide all steps */
     $all('.form-step').forEach(function (s) {
@@ -133,26 +136,8 @@ function showStep(n) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ─── Stepper visual update ─────────────────── */
-/*
-   Layout: 4 dots spaced evenly across 100%.
-   Dot centres are at: 12.5%, 37.5%, 62.5%, 87.5%
-   (each dot owns 25% of width; centre = midpoint of that slot)
 
-   Fill line starts at first dot centre (12.5%)
-   and grows rightward toward the active dot centre.
-
-   Gap between adjacent dot centres = 25%.
-   Fill width per completed gap:
-     step 1 → 0   gaps → fill = 0%  (from 12.5% to 12.5%)
-     step 2 → 1   gap  → fill = 25% (from 12.5% to 37.5%)
-     step 3 → 2   gaps → fill = 50% (from 12.5% to 62.5%)
-     step 4 → 3   gaps → fill = 75% (from 12.5% to 87.5%)
-
-   But .stepper-fill starts at left:0, so we need to offset:
-     actual fill element left  = 12.5%
-     actual fill element width = (currentStep - 1) * 25%
-*/
+// Paints active/done states for stepper dots and fill bar.
 function updateStepper() {
     var fillEl = document.getElementById('stepperFill');
 
@@ -162,12 +147,11 @@ function updateStepper() {
         fillEl.style.width = ((currentStep - 1) * 25) + '%';
     }
 
-    /* Update each dot */
     for (var i = 1; i <= TOTAL_STEPS; i++) {
         var dot = document.getElementById('sdot' + i);
         if (!dot) continue;
 
-        /* Remove all states first */
+        
         dot.classList.remove('is-active', 'is-done');
 
         if (i < currentStep) {
@@ -175,7 +159,7 @@ function updateStepper() {
         } else if (i === currentStep) {
             dot.classList.add('is-active');
         }
-        /* future steps: no class = grey default */
+        
     }
 }
 
@@ -187,6 +171,7 @@ function updateButtons() {
 }
 
 /* ─── Worker/user field toggle ──────────────── */
+// Switches step-4 fields and labels based on selected role.
 function syncWorkerFields() {
     var role = document.querySelector('input[name="role"]:checked');
     var isWorker = role && role.value === 'worker';
@@ -208,7 +193,7 @@ function syncWorkerFields() {
     if (sub)   sub.textContent   = isWorker ? 'Tell us about your professional background' : 'Personalise your Shohoj Sheba experience';
 }
 
-/* ─── Per-step validation ───────────────────── */
+/* Per-step validation */
 function validateStep(n) {
     if (n === 1) return true; /* Role selection always valid */
 
@@ -255,7 +240,7 @@ function validateStep(n) {
     return true;
 }
 
-/* ─── Submit ────────────────────────────────── */
+// Submits signup data to API .
 function handleSubmit() {
     if (!validateStep(4)) return;
 
@@ -301,6 +286,7 @@ function handleSubmit() {
 }
 
 /* ─── Password toggle ───────────────────────── */
+// Toggles password visibility for specified field and icon.
 function togglePassword(fieldId, iconId) {
     var field = document.getElementById(fieldId);
     var icon  = document.getElementById(iconId);
@@ -315,6 +301,7 @@ function togglePassword(fieldId, iconId) {
 }
 
 /* ─── Email validation ──────────────────────── */
+// Returns true when email string matches basic email format.
 function isValidEmail(v) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
@@ -322,6 +309,7 @@ function isValidEmail(v) {
 /* ─── Toast notifications ───────────────────── */
 var _toast = null;
 
+// Shows a temporary toast message with type-based icon/style.
 function showToast(msg, type) {
     if (_toast) { _toast.remove(); _toast = null; }
 

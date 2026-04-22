@@ -91,6 +91,7 @@ const serviceDatabase = {
     }
 };
 
+// Reads the service slug from URL query and returns a safe default.
 function getServiceKey() {
     const urlParams = new URLSearchParams(window.location.search);
     const raw = urlParams.get('service');
@@ -98,21 +99,25 @@ function getServiceKey() {
     return key || 'carpenter';
 }
 
+// Returns service data object or falls back to carpenter.
 function getServiceData(serviceKey) {
     if (serviceDatabase[serviceKey]) return serviceDatabase[serviceKey];
     return serviceDatabase.carpenter;
 }
 
+// Sets plain text content for a target element id.
 function setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
 }
 
+// Sets HTML content for a target element id.
 function setHtml(id, html) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
 }
 
+// Renders full service detail page from selected service data.
 function loadServiceDetail() {
     let serviceKey = getServiceKey();
 

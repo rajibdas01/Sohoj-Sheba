@@ -9,6 +9,7 @@ if (!$sessionUser) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Stops request when user role does not match the required role.
 function require_role(string $currentRole, string $requiredRole): void
 {
     if ($currentRole !== $requiredRole) {
@@ -16,6 +17,7 @@ function require_role(string $currentRole, string $requiredRole): void
     }
 }
 
+// Reads JSON request body and always returns an array.
 function read_json_body(): array
 {
     $raw = file_get_contents('php://input');
@@ -23,11 +25,13 @@ function read_json_body(): array
     return is_array($j) ? $j : [];
 }
 
+// Generates a readable 12-character booking reference code.
 function booking_code(): string
 {
     return strtoupper(bin2hex(random_bytes(6))); // 12 chars
 }
 
+// Maps internal cancelled+denied note to a friendly denied status.
 function map_display_status(array $row): string
 {
     $status = (string)($row['status'] ?? '');
@@ -38,6 +42,7 @@ function map_display_status(array $row): string
     return $status;
 }
 
+// Adds display_status field to each booking row for frontend use.
 function add_display_status(array $rows): array
 {
     foreach ($rows as &$row) {
@@ -47,6 +52,7 @@ function add_display_status(array $rows): array
     return $rows;
 }
 
+// Returns POST data from JSON body first, then normal form body.
 function json_post_or_body(): array
 {
     $data = read_json_body();
@@ -56,6 +62,7 @@ function json_post_or_body(): array
     return is_array($data) ? $data : [];
 }
 
+// Prepares, binds, executes, and returns a mysqli statement.
 function run_stmt(mysqli $conn, string $sql, string $types = '', array $params = []): mysqli_stmt
 {
     $stmt = $conn->prepare($sql);
@@ -71,6 +78,7 @@ function run_stmt(mysqli $conn, string $sql, string $types = '', array $params =
     return $stmt;
 }
 
+// Fetches one associative row from a statement result.
 function fetch_one_assoc(mysqli_stmt $stmt): ?array
 {
     $result = $stmt->get_result();
@@ -78,6 +86,7 @@ function fetch_one_assoc(mysqli_stmt $stmt): ?array
     return $row ?: null;
 }
 
+// Fetches all associative rows from a statement result.
 function fetch_all_assoc(mysqli_stmt $stmt): array
 {
     $result = $stmt->get_result();

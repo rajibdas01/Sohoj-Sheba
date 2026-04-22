@@ -7,6 +7,7 @@ if (!$user) {
     json_response(['success' => false, 'message' => 'Not authenticated'], 401);
 }
 
+// Ensures API endpoint is called with expected HTTP method only.
 function require_method(string $method): void
 {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== $method) {
@@ -14,6 +15,7 @@ function require_method(string $method): void
     }
 }
 
+// Validates and returns service slug from query parameters.
 function get_service_slug(): string
 {
     $service = trim((string)($_GET['service'] ?? ''));

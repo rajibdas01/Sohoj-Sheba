@@ -20,6 +20,25 @@ if ($email === '' || $password === '') {
     json_response(['success' => false, 'message' => 'Email and password are required.'], 400);
 }
 
+// Reads worker fallback photo when users.profile_photo_path is empty.
+function worker_photo_fallback(mysqli $conn, int $userId, ?string $currentPhoto): ?string
+{
+    if ($currentPhoto !== null && trim($currentPhoto) !== '') {
+        return $currentPhoto;
+    }
+    $stmt = $conn->prepare('SELECT profile_photo_path FROM worker_profiles WHERE user_id = ? LIMIT 1');
+    if (!$stmt) {
+        return $currentPhoto;
+    }
+    $stmt->bind_param('i', $userId);
+    if (!$stmt->execute()) {
+        return $currentPhoto;
+    }
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    return ($row && !empty($row['profile_photo_path'])) ? $row['profile_photo_path'] : $currentPhoto;
+}
+
 try {
     global $conn;
 
@@ -49,20 +68,7 @@ try {
 
     $photo = $user['profile_photo_path'] ?? null;
     if ($user['role'] === 'worker' && ($photo === null || $photo === '')) {
-        $workerId = (int)$user['id'];
-        $w = $conn->prepare('SELECT profile_photo_path FROM worker_profiles WHERE user_id = ? LIMIT 1');
-        if (!$w) {
-            throw new RuntimeException('Prepare failed');
-        }
-        $w->bind_param('i', $workerId);
-        if (!$w->execute()) {
-            throw new RuntimeException('Execute failed');
-        }
-        $wResult = $w->get_result();
-        $wp = $wResult ? $wResult->fetch_assoc() : null;
-        if ($wp && !empty($wp['profile_photo_path'])) {
-            $photo = $wp['profile_photo_path'];
-        }
+        $photo = worker_photo_fallback($conn, (int)$user['id'], $photo);
     }
 
     $_SESSION['user'] = [

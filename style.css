@@ -1,5 +1,6 @@
 /* =============================================
    SHOHOJ SHEBA — STYLE.CSS
+   Workflow: global tokens -> layout blocks -> sections -> responsive rules
    ============================================= */
 
 :root {

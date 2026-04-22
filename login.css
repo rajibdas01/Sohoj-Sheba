@@ -1,6 +1,7 @@
 /* =============================================
    SHOHOJ SHEBA — LOGIN.CSS
    Matches the landing page design system
+   Workflow: variables -> navbar -> split layout -> form -> responsive
    ============================================= */
 
 :root {

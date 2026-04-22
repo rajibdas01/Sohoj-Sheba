@@ -6,6 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['success' => false, 'message' => 'Invalid method'], 405);
 }
 
+// Converts common truthy values to database-friendly 1/0 integer.
 function normalize_bool($v): int
 {
     if ($v === null) {
@@ -18,6 +19,7 @@ function normalize_bool($v): int
     return in_array($s, ['1', 'true', 'yes', 'on'], true) ? 1 : 0;
 }
 
+// Creates directory path recursively when it does not exist.
 function ensure_dir(string $dir): void
 {
     if (!is_dir($dir)) {
@@ -25,17 +27,20 @@ function ensure_dir(string $dir): void
     }
 }
 
+// Returns project root path safely with fallback.
 function project_root_path(): string
 {
     $root = realpath(dirname(__DIR__));
     return $root !== false ? $root : dirname(__DIR__);
 }
 
+// Returns absolute uploads directory path.
 function uploads_base_dir(): string
 {
     return project_root_path() . DIRECTORY_SEPARATOR . 'uploads';
 }
 
+// Reads request body from POST first, then JSON body.
 function read_body_or_post(): array
 {
     if (!empty($_POST)) {
@@ -46,6 +51,7 @@ function read_body_or_post(): array
     return is_array($json) ? $json : [];
 }
 
+// Prepares, binds, executes, and returns a mysqli statement.
 function run_stmt(mysqli $conn, string $sql, string $types = '', array $params = []): mysqli_stmt
 {
     $stmt = $conn->prepare($sql);
@@ -61,6 +67,7 @@ function run_stmt(mysqli $conn, string $sql, string $types = '', array $params =
     return $stmt;
 }
 
+// Fetches one associative row from mysqli statement result.
 function fetch_one_assoc(mysqli_stmt $stmt): ?array
 {
     $result = $stmt->get_result();
@@ -68,12 +75,14 @@ function fetch_one_assoc(mysqli_stmt $stmt): ?array
     return $row ?: null;
 }
 
+// Fetches all associative rows from mysqli statement result.
 function fetch_all_assoc(mysqli_stmt $stmt): array
 {
     $result = $stmt->get_result();
     return $result ? ($result->fetch_all(MYSQLI_ASSOC) ?: []) : [];
 }
 
+// Validates and saves uploaded image, returns project-relative path.
 function save_upload(string $field, string $targetDir, array $allowedMime, int $maxBytes): ?string
 {
     if (!isset($_FILES[$field]) || !is_array($_FILES[$field])) {

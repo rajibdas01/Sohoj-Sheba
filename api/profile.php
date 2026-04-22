@@ -10,6 +10,7 @@ if (!$sessionUser) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Prepares, binds, executes, and returns a mysqli statement.
 function run_stmt(mysqli $conn, string $sql, string $types = '', array $params = []): mysqli_stmt
 {
     $stmt = $conn->prepare($sql);
@@ -25,6 +26,7 @@ function run_stmt(mysqli $conn, string $sql, string $types = '', array $params =
     return $stmt;
 }
 
+// Fetches one associative row from a statement result.
 function fetch_one_assoc(mysqli_stmt $stmt): ?array
 {
     $result = $stmt->get_result();
@@ -32,6 +34,7 @@ function fetch_one_assoc(mysqli_stmt $stmt): ?array
     return $row ?: null;
 }
 
+// Fetches all associative rows from a statement result.
 function fetch_all_assoc(mysqli_stmt $stmt): array
 {
     $result = $stmt->get_result();
@@ -51,9 +54,8 @@ switch ($method) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
+
 // GET — fetch full profile
-// ══════════════════════════════════════════════════════════════════════════════
 function handleGet(array $user): void
 {
     try {
@@ -130,7 +132,7 @@ function handleGet(array $user): void
                 }
             }
 
-            // Services this worker offers — return both name (display) and slug (for checkboxes)
+           
             $sStmt = run_stmt(
                 $conn,
                 'SELECT s.name, s.slug FROM services s
@@ -152,9 +154,7 @@ function handleGet(array $user): void
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
 // POST — update profile
-// ══════════════════════════════════════════════════════════════════════════════
 function handlePost(array $sessionUser): void {
     $rawJson = file_get_contents('php://input');
     $json    = json_decode($rawJson, true);
@@ -169,7 +169,7 @@ function handlePost(array $sessionUser): void {
         $role   = $sessionUser['role'];
         $action = strtolower($pv('action'));
 
-        // ── Password update route (JSON) ────────────────────────────────────
+
         if ($action === 'change_password') {
             $currentPassword = $pv('currentPassword');
             $newPassword     = $pv('newPassword');
@@ -351,6 +351,7 @@ function handlePost(array $sessionUser): void {
 // ══════════════════════════════════════════════════════════════════════════════
 // Helper — validate and save a file upload, return web-relative path or null
 // ══════════════════════════════════════════════════════════════════════════════
+// Validates uploaded image and stores it under uploads/<subdir>.
 function saveUpload(string $field, string $subdir = 'profiles'): ?string
 {
     if (!isset($_FILES[$field])) {

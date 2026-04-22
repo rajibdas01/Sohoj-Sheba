@@ -1,6 +1,7 @@
 /* =============================================
    SHOHOJ SHEBA — DASHBOARD-STYLES.CSS
    Shared layout: sidebar, topbar, content area
+   Workflow: base layout -> reusable cards/components -> responsive behavior
    ============================================= */
 
 :root {
